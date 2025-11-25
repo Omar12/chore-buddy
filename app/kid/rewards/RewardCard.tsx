@@ -25,7 +25,7 @@ export default function RewardCard({ reward, currentPoints, profileId }: RewardC
       return;
     }
 
-    if (!confirm(`Are you sure you want to request "${reward.title}" for ${reward.pointsCost} points?`)) {
+    if (!confirm(`Are you sure you want to request "${reward.name}" for ${reward.pointsCost} points?`)) {
       return;
     }
 
@@ -48,7 +48,7 @@ export default function RewardCard({ reward, currentPoints, profileId }: RewardC
         <div className="flex flex-col h-full">
           <div className="flex-1 mb-4">
             <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-2">
-              {reward.title}
+              {reward.name}
             </h3>
 
             {reward.description && (

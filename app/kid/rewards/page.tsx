@@ -7,7 +7,7 @@ import RewardCard from './RewardCard';
 import MyRedemptions from './MyRedemptions';
 
 export default async function KidRewardsPage() {
-  const profileId = cookies().get('selected_profile_id')?.value;
+  const profileId = (await cookies()).get('selected_profile_id')?.value;
 
   if (!profileId) {
     return (

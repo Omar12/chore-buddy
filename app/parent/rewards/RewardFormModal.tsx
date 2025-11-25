@@ -24,28 +24,25 @@ export default function RewardFormModal({
   initialData,
 }: RewardFormModalProps) {
   const [formData, setFormData] = useState<CreateRewardInput>({
-    title: '',
+    name: '',
     description: '',
     pointsCost: 50,
-    isActive: true,
   });
 
   useEffect(() => {
     if (initialData) {
       setFormData({
-        title: initialData.title,
+        name: initialData.name,
         description: initialData.description || '',
         pointsCost: initialData.pointsCost,
-        isActive: initialData.isActive,
       });
     } else {
       // Reset form when modal opens for creation
       if (isOpen) {
         setFormData({
-          title: '',
+          name: '',
           description: '',
           pointsCost: 50,
-          isActive: true,
         });
       }
     }
@@ -80,15 +77,15 @@ export default function RewardFormModal({
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Title */}
+            {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Title <span className="text-red-500">*</span>
+                Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 maxLength={100}
                 placeholder="e.g., Extra screen time"
@@ -124,20 +121,6 @@ export default function RewardFormModal({
                 max={10000}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
-            </div>
-
-            {/* Is Active */}
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isActive"
-                checked={formData.isActive}
-                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                Active (kids can see and redeem this reward)
-              </label>
             </div>
 
             {/* Actions */}

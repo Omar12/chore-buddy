@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { createChore } from '@/app/api/chores/actions';
 import type { Profile, CreateChoreInput } from '@/types';
 import ChoreFormModal from './ChoreFormModal';

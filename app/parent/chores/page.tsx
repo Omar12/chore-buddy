@@ -1,6 +1,6 @@
 import { getChores } from '@/app/api/chores/actions';
 import { getProfiles } from '@/app/api/profiles/actions';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import ChoresTable from './ChoresTable';
 import CreateChoreButton from './CreateChoreButton';
 

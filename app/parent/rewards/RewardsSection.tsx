@@ -31,7 +31,7 @@ export default function RewardsSection({ rewards }: RewardsSectionProps) {
             <div className="flex flex-col h-full">
               <div className="flex items-start justify-between mb-2">
                 <h3 className="font-semibold text-gray-900 dark:text-white flex-1">
-                  {reward.title}
+                  {reward.name}
                 </h3>
                 <Badge variant={reward.isActive ? 'success' : 'default'}>
                   {reward.isActive ? 'Active' : 'Inactive'}
@@ -51,7 +51,7 @@ export default function RewardsSection({ rewards }: RewardsSectionProps) {
 
                 <div className="flex gap-2 pt-2">
                   <EditRewardButton reward={reward} />
-                  <DeleteRewardButton rewardId={reward.id} rewardTitle={reward.title} />
+                  <DeleteRewardButton rewardId={reward.id} rewardTitle={reward.name} />
                 </div>
               </div>
             </div>

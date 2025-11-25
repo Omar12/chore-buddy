@@ -37,11 +37,6 @@ export default function ProfilesSection({ profiles, type }: ProfilesSectionProps
                     <h3 className="font-semibold text-gray-900 dark:text-white truncate">
                       {profile.name}
                     </h3>
-                    {profile.email && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
-                        {profile.email}
-                      </p>
-                    )}
                   </div>
                   <Badge variant={profile.role === 'owner' ? 'info' : 'default'}>
                     {profile.role}

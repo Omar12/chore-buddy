@@ -8,7 +8,8 @@
       "Bash(then echo \"Docker container is running. Use: docker-compose logs -f app\")",
       "Bash(else echo \"Docker is not running or container not found\")",
       "Bash(fi)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(npm run lint:*)"
     ],
     "deny": [],
     "ask": []

@@ -26,8 +26,8 @@ export default function ProfileFormModal({
   initialData,
 }: ProfileFormModalProps) {
   const [formData, setFormData] = useState<CreateProfileInput>({
+    familyId: '',
     name: '',
-    email: '',
     role: type === 'kid' ? 'kid' : 'parent',
     avatarUrl: '',
   });
@@ -35,8 +35,8 @@ export default function ProfileFormModal({
   useEffect(() => {
     if (initialData) {
       setFormData({
+        familyId: initialData.familyId,
         name: initialData.name,
-        email: initialData.email || '',
         role: initialData.role,
         avatarUrl: initialData.avatarUrl || '',
       });
@@ -44,8 +44,8 @@ export default function ProfileFormModal({
       // Reset form when modal opens for creation
       if (isOpen) {
         setFormData({
+          familyId: '',
           name: '',
-          email: '',
           role: type === 'kid' ? 'kid' : 'parent',
           avatarUrl: '',
         });
@@ -94,21 +94,6 @@ export default function ProfileFormModal({
                 required
                 maxLength={100}
                 placeholder={type === 'kid' ? "Kid's name" : "Parent/Helper's name"}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              />
-            </div>
-
-            {/* Email (optional for kids, required for adults) */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Email {type !== 'kid' && <span className="text-red-500">*</span>}
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required={type !== 'kid'}
-                placeholder="email@example.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>

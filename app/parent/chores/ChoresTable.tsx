@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
 import type { Chore, Profile } from '@/types';
 import { formatRelativeDate } from '@/lib/utils/dates';
 import EditChoreButton from './EditChoreButton';

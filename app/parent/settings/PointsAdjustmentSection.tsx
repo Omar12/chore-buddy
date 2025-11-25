@@ -5,20 +5,15 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { createManualAdjustment } from '@/app/api/points/actions';
-import type { Profile } from '@/types';
-
-interface KidWithPoints {
-  profile: Profile;
-  points: number;
-}
+import type { ProfileWithPoints } from '@/types';
 
 interface PointsAdjustmentSectionProps {
-  kidsWithPoints: KidWithPoints[];
+  kidsWithPoints: ProfileWithPoints[];
 }
 
 export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjustmentSectionProps) {
   const router = useRouter();
-  const [selectedKid, setSelectedKid] = useState<string>(kidsWithPoints[0]?.profile.id || '');
+  const [selectedKid, setSelectedKid] = useState<string>(kidsWithPoints[0]?.id || '');
   const [amount, setAmount] = useState<number>(0);
   const [notes, setNotes] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -62,7 +57,7 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
     }
   };
 
-  const selectedKidData = kidsWithPoints.find(k => k.profile.id === selectedKid);
+  const selectedKidData = kidsWithPoints.find(k => k.id === selectedKid);
 
   return (
     <Card>
@@ -89,9 +84,9 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
-              {kidsWithPoints.map(({ profile, points }) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.name} (Current: {points} points)
+              {kidsWithPoints.map((kid) => (
+                <option key={kid.id} value={kid.id}>
+                  {kid.name} (Current: {kid.totalPoints} points)
                 </option>
               ))}
             </select>
@@ -101,9 +96,9 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
           {selectedKidData && (
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
               <p className="text-sm text-gray-700 dark:text-gray-300">
-                <span className="font-medium">{selectedKidData.profile.name}</span> currently has{' '}
+                <span className="font-medium">{selectedKidData.name}</span> currently has{' '}
                 <span className="font-bold text-blue-600 dark:text-blue-400">
-                  {selectedKidData.points} points
+                  {selectedKidData.totalPoints} points
                 </span>
               </p>
             </div>
@@ -147,7 +142,7 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 New balance will be:{' '}
                 <span className={`font-bold ${amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {selectedKidData.points + amount} points
+                  {selectedKidData.totalPoints + amount} points
                 </span>
                 {' '}({amount > 0 ? '+' : ''}{amount} points)
               </p>
