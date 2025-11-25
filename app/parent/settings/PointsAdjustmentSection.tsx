@@ -48,7 +48,7 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
         return;
       }
 
-      await createManualAdjustment(selectedKid, amount, notes || undefined, createdByProfileId);
+      await createManualAdjustment(selectedKid, amount, notes || '', createdByProfileId);
 
       // Reset form
       setAmount(0);
@@ -68,7 +68,7 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
     <Card>
       <CardContent className="py-6">
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Manually add or remove points from a kid's balance. Use positive numbers to add points, negative to remove.
+          Manually add or remove points from a kid&apos;s balance. Use positive numbers to add points, negative to remove.
         </p>
 
         {error && (

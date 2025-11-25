@@ -3,13 +3,13 @@
 import { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import type { RewardRedemption, Profile } from '@/types';
+import type { RedemptionWithDetails, Profile } from '@/types';
 import { formatRelativeDate } from '@/lib/utils/dates';
 import ApproveRedemptionButton from '../dashboard/ApproveRedemptionButton';
 import RejectRedemptionButton from '../dashboard/RejectRedemptionButton';
 
 interface RedemptionsSectionProps {
-  redemptions: RewardRedemption[];
+  redemptions: RedemptionWithDetails[];
   profiles: Profile[];
 }
 
@@ -34,8 +34,8 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
       if (a.status === 'requested' && b.status !== 'requested') return -1;
       if (a.status !== 'requested' && b.status === 'requested') return 1;
 
-      // Then by created date (newest first)
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      // Then by requested date (newest first)
+      return new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime();
     });
   }, [filteredRedemptions]);
 
@@ -91,11 +91,8 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
         <div className="space-y-4">
           {sortedRedemptions.map(redemption => {
             const profile = profileMap.get(redemption.profileId);
-            const approvedByProfile = redemption.approvedByProfileId
-              ? profileMap.get(redemption.approvedByProfileId)
-              : null;
-            const rejectedByProfile = redemption.rejectedByProfileId
-              ? profileMap.get(redemption.rejectedByProfileId)
+            const resolvedByProfile = redemption.resolvedByProfileId
+              ? profileMap.get(redemption.resolvedByProfileId)
               : null;
 
             return (
@@ -106,7 +103,7 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
                       <div className="flex items-start justify-between mb-2">
                         <div>
                           <h3 className="font-semibold text-gray-900 dark:text-white">
-                            {redemption.rewardTitle}
+                            {redemption.reward.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
                             Requested by: {profile?.name || 'Unknown'}
@@ -114,7 +111,7 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
                         </div>
                         <Badge
                           variant={
-                            redemption.status === 'approved' ? 'success' :
+                            redemption.status === 'approved' || redemption.status === 'redeemed' ? 'success' :
                             redemption.status === 'rejected' ? 'default' :
                             'warning'
                           }
@@ -127,22 +124,22 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
                       <div className="space-y-1 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex gap-3">
                           <span className="font-medium text-blue-600 dark:text-blue-400">
-                            {redemption.pointsCost} points
+                            {redemption.reward.pointsCost} points
                           </span>
-                          <span>Requested: {formatRelativeDate(redemption.createdAt)}</span>
+                          <span>Requested: {formatRelativeDate(redemption.requestedAt)}</span>
                         </div>
 
-                        {redemption.status === 'approved' && redemption.approvedAt && (
+                        {(redemption.status === 'approved' || redemption.status === 'redeemed') && redemption.resolvedAt && (
                           <div>
-                            Approved: {formatRelativeDate(redemption.approvedAt)}
-                            {approvedByProfile && ` by ${approvedByProfile.name}`}
+                            Approved: {formatRelativeDate(redemption.resolvedAt)}
+                            {resolvedByProfile && ` by ${resolvedByProfile.name}`}
                           </div>
                         )}
 
-                        {redemption.status === 'rejected' && redemption.rejectedAt && (
+                        {redemption.status === 'rejected' && redemption.resolvedAt && (
                           <div>
-                            Rejected: {formatRelativeDate(redemption.rejectedAt)}
-                            {rejectedByProfile && ` by ${rejectedByProfile.name}`}
+                            Rejected: {formatRelativeDate(redemption.resolvedAt)}
+                            {resolvedByProfile && ` by ${resolvedByProfile.name}`}
                           </div>
                         )}
                       </div>

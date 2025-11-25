@@ -1,4 +1,4 @@
-import { format, isToday, isTomorrow, isPast, parseISO } from 'date-fns';
+import { format, isToday, isTomorrow, isYesterday, isPast, parseISO, formatDistanceToNow } from 'date-fns';
 
 /**
  * Format a date string for display
@@ -42,5 +42,40 @@ export function isOverdue(dueDate: string | null): boolean {
     return isPast(date) && !isToday(date);
   } catch {
     return false;
+  }
+}
+
+/**
+ * Format a date as a relative time string (e.g., "2 hours ago", "yesterday")
+ */
+export function formatRelativeDate(dateString: string | null): string {
+  if (!dateString) return 'Unknown';
+
+  try {
+    const date = parseISO(dateString);
+
+    if (isToday(date)) {
+      return formatDistanceToNow(date, { addSuffix: true });
+    }
+
+    if (isYesterday(date)) {
+      return 'Yesterday';
+    }
+
+    if (isTomorrow(date)) {
+      return 'Tomorrow';
+    }
+
+    // For dates more than a day away, show the formatted date
+    const now = new Date();
+    const diffInDays = Math.abs(Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
+
+    if (diffInDays < 7) {
+      return formatDistanceToNow(date, { addSuffix: true });
+    }
+
+    return format(date, 'MMM d, yyyy');
+  } catch {
+    return 'Invalid date';
   }
 }

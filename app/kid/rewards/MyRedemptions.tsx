@@ -2,11 +2,11 @@
 
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import type { RewardRedemption } from '@/types';
+import type { RedemptionWithDetails } from '@/types';
 import { formatRelativeDate } from '@/lib/utils/dates';
 
 interface MyRedemptionsProps {
-  redemptions: RewardRedemption[];
+  redemptions: RedemptionWithDetails[];
 }
 
 export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
@@ -15,7 +15,7 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
       <Card>
         <CardContent className="py-8 text-center">
           <p className="text-gray-500 dark:text-gray-400">
-            You haven't requested any rewards yet
+            You haven&apos;t requested any rewards yet
           </p>
         </CardContent>
       </Card>
@@ -24,7 +24,7 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
 
   // Sort by date (newest first)
   const sortedRedemptions = [...redemptions].sort((a, b) => {
-    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    return new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime();
   });
 
   return (
@@ -39,15 +39,16 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
                 color: 'bg-yellow-50 dark:bg-yellow-900/20',
               };
             case 'approved':
+            case 'redeemed':
               return {
                 badge: <Badge variant="success">✓ Approved</Badge>,
-                message: `Approved ${formatRelativeDate(redemption.approvedAt || redemption.updatedAt)}`,
+                message: redemption.resolvedAt ? `Approved ${formatRelativeDate(redemption.resolvedAt)}` : 'Approved',
                 color: 'bg-green-50 dark:bg-green-900/20',
               };
             case 'rejected':
               return {
                 badge: <Badge variant="default">✗ Rejected</Badge>,
-                message: `Rejected ${formatRelativeDate(redemption.rejectedAt || redemption.updatedAt)}`,
+                message: redemption.resolvedAt ? `Rejected ${formatRelativeDate(redemption.resolvedAt)}` : 'Rejected',
                 color: 'bg-gray-50 dark:bg-gray-900/20',
               };
             default:
@@ -67,10 +68,10 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-900 dark:text-white">
-                    {redemption.rewardTitle}
+                    {redemption.reward.name}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Requested {formatRelativeDate(redemption.createdAt)}
+                    Requested {formatRelativeDate(redemption.requestedAt)}
                   </p>
                 </div>
                 {statusInfo.badge}
@@ -78,7 +79,7 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
 
               <div className="flex items-center gap-4 text-sm">
                 <span className="font-medium text-blue-600 dark:text-blue-400">
-                  {redemption.pointsCost} points
+                  {redemption.reward.pointsCost} points
                 </span>
                 {statusInfo.message && (
                   <span className="text-gray-600 dark:text-gray-400">
@@ -87,7 +88,7 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
                 )}
               </div>
 
-              {redemption.status === 'approved' && (
+              {(redemption.status === 'approved' || redemption.status === 'redeemed') && (
                 <div className="mt-3 p-3 bg-green-100 dark:bg-green-900/30 rounded-md">
                   <p className="text-sm text-green-800 dark:text-green-200">
                     🎉 Enjoy your reward! Ask your parents to give it to you.

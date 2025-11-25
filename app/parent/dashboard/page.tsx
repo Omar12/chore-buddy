@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import Button from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { getKidProfilesWithPoints } from '@/app/api/points/actions';
 import { getPendingChores, approveChore, rejectChore } from '@/app/api/chores/actions';
 import { getPendingRedemptions } from '@/app/api/rewards/actions';
 import { getProfiles } from '@/app/api/profiles/actions';
-import type { Chore, RewardRedemption, Profile } from '@/types';
+import type { Chore, RedemptionWithDetails, Profile } from '@/types';
 import { formatDate, formatRelativeDate } from '@/lib/utils/dates';
 import ApproveChoreButton from './ApproveChoreButton';
 import RejectChoreButton from './RejectChoreButton';
@@ -29,8 +29,8 @@ async function getKidsWithStats(): Promise<KidWithStats[]> {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  return kidsWithPoints.map(({ profile, points }) => {
-    const kidChores = allChores.filter(c => c.assignedToProfileId === profile.id);
+  return kidsWithPoints.map((kidProfile) => {
+    const kidChores = allChores.filter(c => c.assignedToProfileId === kidProfile.id);
 
     const todaysChores = kidChores.filter(chore => {
       if (!chore.dueDate) return false;
@@ -48,8 +48,18 @@ async function getKidsWithStats(): Promise<KidWithStats[]> {
     ).length;
 
     return {
-      profile,
-      points,
+      profile: {
+        id: kidProfile.id,
+        familyId: kidProfile.familyId,
+        userId: kidProfile.userId,
+        name: kidProfile.name,
+        avatarUrl: kidProfile.avatarUrl,
+        role: kidProfile.role,
+        pinCode: kidProfile.pinCode,
+        createdAt: kidProfile.createdAt,
+        updatedAt: kidProfile.updatedAt,
+      },
+      points: kidProfile.totalPoints,
       todaysChores,
       incompleteChores,
       pendingReviews,
@@ -73,7 +83,7 @@ export default async function ParentDashboard() {
           Dashboard
         </h1>
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Manage your family's chores and rewards
+          Manage your family&apos;s chores and rewards
         </p>
       </div>
 
@@ -126,7 +136,7 @@ export default async function ParentDashboard() {
                 <CardContent>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">Today's chores:</span>
+                      <span className="text-gray-600 dark:text-gray-400">Today&apos;s chores:</span>
                       <span className="font-medium">{todaysChores}</span>
                     </div>
                     <div className="flex justify-between">
@@ -227,7 +237,7 @@ export default async function ParentDashboard() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {pendingRedemptions.map((redemption: RewardRedemption) => {
+            {pendingRedemptions.map((redemption: RedemptionWithDetails) => {
               const profile = profileMap.get(redemption.profileId);
 
               return (
@@ -238,7 +248,7 @@ export default async function ParentDashboard() {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="font-semibold text-gray-900 dark:text-white">
-                              {redemption.rewardTitle}
+                              {redemption.reward.name}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                               Requested by: {profile?.name || 'Unknown'}
@@ -248,9 +258,9 @@ export default async function ParentDashboard() {
                         </div>
                         <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
                           <span className="font-medium text-blue-600 dark:text-blue-400">
-                            {redemption.pointsCost} points
+                            {redemption.reward.pointsCost} points
                           </span>
-                          <span>Requested: {formatRelativeDate(redemption.createdAt)}</span>
+                          <span>Requested: {formatRelativeDate(redemption.requestedAt)}</span>
                         </div>
                       </div>
                       <div className="flex gap-2">

@@ -5,14 +5,13 @@ import { Badge } from '@/components/ui/Badge';
 import { getChoresForKid } from '@/app/api/chores/actions';
 import { getProfilePoints } from '@/app/api/points/actions';
 import { getProfile } from '@/app/api/profiles/actions';
-import type { Chore } from '@/types';
-import { formatRelativeDate } from '@/lib/utils/dates';
 import ChoreCard from './ChoreCard';
 
 export default async function KidDashboard() {
   // Get profile ID from session storage (this would be set in middleware)
   // For now, we'll use a placeholder approach
-  const profileId = cookies().get('selected_profile_id')?.value;
+  const cookieStore = await cookies();
+  const profileId = cookieStore.get('selected_profile_id')?.value;
 
   if (!profileId) {
     // In a real app, this would be handled by middleware
@@ -101,7 +100,7 @@ export default async function KidDashboard() {
                   Great job!
                 </p>
                 <p className="text-sm text-green-700 dark:text-green-300">
-                  You've completed {recentlyCompleted.length} chore{recentlyCompleted.length > 1 ? 's' : ''} recently!
+                  You&rsquo;ve completed {recentlyCompleted.length} chore{recentlyCompleted.length > 1 ? 's' : ''} recently!
                 </p>
               </div>
             </div>
@@ -127,7 +126,7 @@ export default async function KidDashboard() {
       {/* Today's Chores */}
       <div className="mb-8">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Today's Chores ({todaysChores.length})
+          Today&apos;s Chores ({todaysChores.length})
         </h2>
         {todaysChores.length === 0 ? (
           <Card>
