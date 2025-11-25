@@ -1,0 +1,147 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+
+export default function KidNav() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [profileName, setProfileName] = useState<string>('');
+
+  useEffect(() => {
+    const selectedProfileId = sessionStorage.getItem('selected_profile_id');
+    if (selectedProfileId) {
+      fetchProfileName(selectedProfileId);
+    }
+  }, []);
+
+  const fetchProfileName = async (profileId: string) => {
+    const supabase = createClient();
+    const { data } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', profileId)
+      .single();
+
+    if (data) {
+      setProfileName(data.name);
+    }
+  };
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    sessionStorage.removeItem('selected_profile_id');
+    sessionStorage.removeItem('selected_profile_role');
+    router.push('/auth/login');
+  };
+
+  const handleSwitchProfile = () => {
+    sessionStorage.removeItem('selected_profile_id');
+    sessionStorage.removeItem('selected_profile_role');
+    router.push('/profile/select');
+  };
+
+  const navItems = [
+    { href: '/kid/dashboard', label: 'My Chores' },
+    { href: '/kid/rewards', label: 'Rewards' },
+  ];
+
+  return (
+    <nav className="bg-gradient-to-r from-blue-500 to-purple-600">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex">
+            <div className="flex-shrink-0 flex items-center">
+              <h1 className="text-xl font-bold text-white">
+                Chore Buddy
+              </h1>
+            </div>
+            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
+                      isActive
+                        ? 'border-white text-white'
+                        : 'border-transparent text-white/80 hover:text-white hover:border-white/50'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+          <div className="hidden sm:ml-6 sm:flex sm:items-center sm:space-x-4">
+            {profileName && (
+              <span className="text-sm font-medium text-white">
+                {profileName}
+              </span>
+            )}
+            <button
+              onClick={handleSwitchProfile}
+              className="text-sm text-white/80 hover:text-white"
+            >
+              Switch Profile
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="text-sm text-white/80 hover:text-white"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      <div className="sm:hidden">
+        <div className="pt-2 pb-3 space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
+                  isActive
+                    ? 'border-white text-white bg-blue-600'
+                    : 'border-transparent text-white/80 hover:bg-blue-600 hover:border-white/50'
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="pt-4 pb-3 border-t border-white/20">
+          <div className="flex items-center px-4">
+            <div className="text-sm font-medium text-white">
+              {profileName}
+            </div>
+          </div>
+          <div className="mt-3 space-y-1">
+            <button
+              onClick={handleSwitchProfile}
+              className="block w-full text-left px-4 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-blue-600"
+            >
+              Switch Profile
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="block w-full text-left px-4 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-blue-600"
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}

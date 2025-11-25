@@ -40,7 +40,9 @@ export async function signUp(email: string, password: string, familyName: string
     .single();
 
   if (familyError || !family) {
-    return { error: 'Failed to create family. Please try again.' };
+    // return { error: 'Failed to create family. Please try again.' };
+    console.log(familyError)
+    return { error: `Error! ${familyError}` };
   }
 
   // Create the owner profile

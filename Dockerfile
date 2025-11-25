@@ -25,8 +25,14 @@ RUN apk upgrade --no-cache
 
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install ALL dependencies (including devDependencies for build)
+RUN npm ci && \
+    npm cache clean --force
+
+# Copy source code
 COPY . .
 
 # Copy environment variables for build time
@@ -54,16 +60,22 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Create a non-root user with no login shell
+# Create a non-root user with no login shell for security
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 --ingroup nodejs --shell /sbin/nologin nextjs
 
-# Copy necessary files from builder
-COPY --from=builder /app/public ./public
+# Copy package.json for metadata
 COPY --from=builder /app/package.json ./package.json
 
-# Copy built application with correct ownership
+# Copy public folder (static assets)
+# Note: This will be empty or minimal in most cases
+COPY --from=builder /app/public ./public
+
+# Copy Next.js standalone output
+# The standalone build includes all necessary dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+
+# Copy static files (JS, CSS, images built by Next.js)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Set proper permissions
@@ -81,7 +93,7 @@ ENV HOSTNAME="0.0.0.0"
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Start the application
 CMD ["node", "server.js"]

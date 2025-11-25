@@ -1,0 +1,29 @@
+# Development Dockerfile for Chore Buddy
+# This file is optimized for development with hot-reload
+
+FROM node:20.18.1-alpine3.20
+
+# Install security updates and dependencies
+RUN apk upgrade --no-cache && \
+    apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json package-lock.json ./
+
+# Install all dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Set environment to development
+ENV NODE_ENV=development
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Start development server with hot reload
+CMD ["npm", "run", "dev"]

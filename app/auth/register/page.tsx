@@ -11,6 +11,7 @@ export default function RegisterPage() {
   const [familyName, setFamilyName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const fieldClassName = "w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +38,17 @@ export default function RegisterPage() {
       const result = await signUp(email, password, familyName);
       if (result?.error) {
         setError(result.error);
+        setLoading(false);
       }
+      // If no error, the redirect will happen and this code won't execute
     } catch (err) {
+      // Check if this is a Next.js redirect error (expected behavior)
+      if (err && typeof err === 'object' && 'digest' in err) {
+        // This is a Next.js redirect, let it propagate
+        throw err;
+      }
+      // Only catch actual errors
       setError('An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   };
@@ -73,7 +81,7 @@ export default function RegisterPage() {
                 value={familyName}
                 onChange={(e) => setFamilyName(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
+                className={fieldClassName}
                 placeholder="The Smith Family"
               />
             </div>
@@ -88,7 +96,7 @@ export default function RegisterPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
+                className={fieldClassName}
                 placeholder="you@example.com"
               />
             </div>
@@ -103,7 +111,7 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
+                className={fieldClassName}
                 placeholder="••••••••"
               />
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -121,7 +129,7 @@ export default function RegisterPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition"
+                className={fieldClassName}
                 placeholder="••••••••"
               />
             </div>

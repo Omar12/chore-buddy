@@ -79,7 +79,28 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Alternative: Run with Docker
+### Alternative: Run with Docker (Development Mode)
+
+For development with hot reload and automatic code updates:
+
+**Quick Start:**
+
+```bash
+# Run the development startup script
+./docker-dev.sh          # macOS/Linux
+# or
+docker-dev.bat           # Windows
+
+# Or use npm scripts
+npm run docker:dev       # Start
+npm run docker:dev:logs  # View logs
+```
+
+Your code changes will be reflected automatically without rebuilding!
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for complete development workflow documentation.
+
+### Alternative: Run with Docker (Production Mode)
 
 If you prefer using Docker, you can get started in 5 minutes:
 

@@ -19,10 +19,17 @@ export default function LoginPage() {
       const result = await signIn(email, password);
       if (result?.error) {
         setError(result.error);
+        setLoading(false);
       }
+      // If no error, the redirect will happen and this code won't execute
     } catch (err) {
+      // Check if this is a Next.js redirect error (expected behavior)
+      if (err && typeof err === 'object' && 'digest' in err) {
+        // This is a Next.js redirect, let it propagate
+        throw err;
+      }
+      // Only catch actual errors
       setError('An unexpected error occurred');
-    } finally {
       setLoading(false);
     }
   };
