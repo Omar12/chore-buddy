@@ -11,6 +11,16 @@ npm test                # Run tests
 npm run lint            # Run linter
 ```
 
+## Database (Prisma + SQLite)
+
+```bash
+npx prisma migrate dev          # Run migrations (creates DB if needed)
+npx prisma migrate dev --name <name>  # Create a new migration
+npx prisma studio               # Open database browser GUI
+npx prisma generate             # Regenerate Prisma Client
+npx prisma db push              # Push schema changes without migration
+```
+
 ## Docker Development (Hot Reload)
 
 ```bash
@@ -76,13 +86,6 @@ docker system prune -a
 docker system df
 ```
 
-## Database (Supabase)
-
-```bash
-# SQL Editor in Supabase Dashboard
-# Run: supabase/migrations/20240101000000_init_schema.sql
-```
-
 ## Git
 
 ```bash
@@ -114,9 +117,8 @@ docker-compose up -d --build --force-recreate
 ## Environment Variables
 
 ```bash
-# Copy example files
-cp .env.example .env.local          # For local dev
-cp .env.docker.example .env         # For Docker
+# Copy example file
+cp .env.example .env
 
 # Edit environment variables
 nano .env                           # macOS/Linux

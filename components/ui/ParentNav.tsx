@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { signOut } from 'next-auth/react';
 
 export default function ParentNav() {
   const pathname = usePathname();
@@ -18,24 +18,21 @@ export default function ParentNav() {
   }, []);
 
   const fetchProfileName = async (profileId: string) => {
-    const supabase = createClient();
-    const { data } = await supabase
-      .from('profiles')
-      .select('name')
-      .eq('id', profileId)
-      .single();
-
-    if (data) {
-      setProfileName(data.name);
+    try {
+      const { getProfile } = await import('@/app/api/profiles/actions');
+      const profile = await getProfile(profileId);
+      if (profile) {
+        setProfileName(profile.name);
+      }
+    } catch {
+      // Ignore errors fetching profile name
     }
   };
 
   const handleSignOut = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
     sessionStorage.removeItem('selected_profile_id');
     sessionStorage.removeItem('selected_profile_role');
-    router.push('/auth/login');
+    await signOut({ callbackUrl: '/auth/login' });
   };
 
   const handleSwitchProfile = () => {

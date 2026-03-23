@@ -5,7 +5,6 @@ Get Chore Buddy running with Docker in 5 minutes.
 ## Prerequisites
 
 - [Docker Desktop](https://docs.docker.com/get-docker/) installed and running
-- A [Supabase](https://supabase.com) account with a project set up
 
 ## Step 1: Clone and Navigate
 
@@ -34,30 +33,20 @@ The script will guide you through the setup.
 
 ```bash
 # Copy the example environment file
-cp .env.docker.example .env
+cp .env.example .env
 
-# Edit .env with your Supabase credentials
+# Edit .env with your settings
 nano .env  # or use any text editor
 ```
 
 Required variables:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="generate-a-random-secret-here"
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-## Step 3: Run the Database Migration
-
-Before starting the app, set up your Supabase database:
-
-1. Go to your [Supabase Dashboard](https://app.supabase.com)
-2. Select your project
-3. Navigate to **SQL Editor**
-4. Copy the contents of `supabase/migrations/20240101000000_init_schema.sql`
-5. Paste and run it in the SQL Editor
-
-## Step 4: Start the Application
+## Step 3: Start the Application
 
 ```bash
 docker-compose up -d
@@ -65,10 +54,11 @@ docker-compose up -d
 
 This will:
 - Build the Docker image (~2-5 minutes first time)
+- Run Prisma migrations to create the SQLite database
 - Start the container in the background
 - Make the app available at http://localhost:3000
 
-## Step 5: Verify It's Running
+## Step 4: Verify It's Running
 
 ```bash
 # Check container status
@@ -108,20 +98,9 @@ docker-compose logs app
 ```
 
 Common issues:
-- Missing or invalid Supabase credentials
+- Missing environment variables
 - Port already in use
 - Docker Desktop not running
-
-### Can't connect to Supabase
-
-Verify your credentials in `.env`:
-- URL should start with `https://` and end with `.supabase.co`
-- Anon key should be a long JWT string
-
-Test your connection:
-1. Go to Supabase Dashboard → Settings → API
-2. Verify the Project URL matches your `.env` file
-3. Copy the `anon` `public` key (not the `service_role` key)
 
 ### Need to reset everything
 
@@ -146,7 +125,6 @@ docker-compose up -d --build
 - **Full Docker documentation**: [docs/DOCKER.md](DOCKER.md)
 - **Database schema**: [docs/database-schema.md](database-schema.md)
 - **Main README**: [../README.md](../README.md)
-- **Supabase docs**: [supabase.com/docs](https://supabase.com/docs)
 - **Docker docs**: [docs.docker.com](https://docs.docker.com)
 
 ## Performance Tips
@@ -158,4 +136,4 @@ docker-compose up -d --build
 
 ---
 
-**Happy Chore Tracking! 🏠**
+**Happy Chore Tracking!**

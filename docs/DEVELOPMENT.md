@@ -18,7 +18,6 @@ Best for rapid development with instant hot reload.
 ### Prerequisites
 
 - Node.js 18+ and npm
-- Supabase project set up
 
 ### Setup
 
@@ -27,8 +26,11 @@ Best for rapid development with instant hot reload.
 npm install
 
 # Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your Supabase credentials
+cp .env.example .env
+# Edit .env if needed (defaults work out of the box)
+
+# Set up the database
+npx prisma migrate dev
 
 # Run development server
 npm run dev
@@ -37,14 +39,14 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000)
 
 **Advantages:**
-- ✅ Instant hot reload
-- ✅ Faster than Docker
-- ✅ Full IDE integration
-- ✅ Easy debugging
+- Instant hot reload
+- Faster than Docker
+- Full IDE integration
+- Easy debugging
 
 **Disadvantages:**
-- ❌ Requires Node.js installed locally
-- ❌ May have environment differences from production
+- Requires Node.js installed locally
+- May have environment differences from production
 
 ## Docker Development (with hot reload)
 
@@ -115,14 +117,14 @@ Your Computer          Docker Container
 ```
 
 **Advantages:**
-- ✅ Matches production environment
-- ✅ Hot reload works
-- ✅ Isolated environment
-- ✅ No Node.js installation needed on host
+- Matches production environment
+- Hot reload works
+- Isolated environment
+- No Node.js installation needed on host
 
 **Disadvantages:**
-- ❌ Slightly slower than local
-- ❌ File sync overhead on some systems
+- Slightly slower than local
+- File sync overhead on some systems
 
 ## Production Docker Build
 
@@ -160,7 +162,7 @@ docker-compose down
 
 #### Local Development (`npm run dev`)
 - **Instant** - Hot reload on save
-- **What updates**: Components, pages, styles, API routes
+- **What updates**: Components, pages, styles, server actions
 - **What requires restart**: Environment variables, config files
 
 #### Docker Development (`npm run docker:dev`)
@@ -212,6 +214,18 @@ nano .env
 # Restart container to pick up changes
 npm run docker:dev:down
 npm run docker:dev
+```
+
+#### Example 4: Changing the Database Schema
+
+```bash
+# Edit prisma/schema.prisma
+
+# Run migration
+npx prisma migrate dev --name describe_your_change
+
+# If using Docker, restart the container
+npm run docker:dev:rebuild
 ```
 
 ## Debugging
@@ -268,8 +282,20 @@ docker-compose -f docker-compose.dev.yml logs app
 
 # Common causes:
 # - Missing .env file
-# - Invalid Supabase credentials
 # - Syntax error in code
+```
+
+### Database Debugging
+
+```bash
+# Open Prisma Studio to browse/edit data
+npx prisma studio
+
+# Reset the database (drops all data)
+npx prisma migrate reset
+
+# View raw SQL for a migration
+cat prisma/migrations/*/migration.sql
 ```
 
 ### Browser DevTools
@@ -336,20 +362,20 @@ npm test
 ### Development (.env)
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="dev-secret-change-in-production"
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### Required for Docker
+### Required Variables
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `DATABASE_URL` - SQLite database path
+- `AUTH_SECRET` - Secret for NextAuth.js session encryption
 - `NEXT_PUBLIC_APP_URL` (defaults to http://localhost:3000)
 
 ### Adding New Environment Variables
 
-1. Add to `.env.example` and `.env.docker.example`
+1. Add to `.env.example`
 2. Add to your local `.env` file
 3. If using Docker, restart container
 4. If variable name starts with `NEXT_PUBLIC_`, rebuild is required for production
@@ -378,6 +404,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Keep UI components in `components/ui/`
 - Keep utilities in `lib/utils/`
 - Keep types in `types/`
+- Database schema in `prisma/schema.prisma`
 - Follow existing patterns and naming conventions
 
 ## Useful Commands
@@ -391,6 +418,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | `npm run docker:dev:logs` | View Docker dev logs |
 | `npm run docker:dev:down` | Stop Docker dev |
 | `npm run docker:dev:rebuild` | Rebuild Docker dev |
+| `npx prisma studio` | Open database browser |
+| `npx prisma migrate dev` | Run database migrations |
 
 ### Production
 
@@ -408,6 +437,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 | `npm test` | Run tests once |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run lint` | Run ESLint |
+| `npm run check` | Run type-check and lint |
 
 ## Getting Help
 
@@ -416,8 +446,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 - Check [DOCKER-QUICKSTART.md](DOCKER-QUICKSTART.md) for quick Docker setup
 - Check browser console for frontend errors
 - Check Docker logs for backend errors
-- Review Supabase logs in dashboard
 
 ---
 
-**Happy Developing! 🚀**
+**Happy Developing!**

@@ -1,209 +1,135 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/db';
 import type { Reward, RewardRedemption, RedemptionWithDetails, CreateRewardInput, UpdateRewardInput } from '@/types';
 import { revalidatePath } from 'next/cache';
 import { getCurrentFamilyId } from '../profiles/actions';
 import { notifyRewardRequested, notifyRewardApproved } from '@/lib/services/notifications';
 
-/**
- * Get all rewards for the family
- */
-export async function getRewards(): Promise<Reward[]> {
-  const supabase = await createClient();
-  const familyId = await getCurrentFamilyId();
+function mapReward(r: any): Reward {
+  return {
+    id: r.id,
+    familyId: r.familyId,
+    name: r.name,
+    description: r.description,
+    pointsCost: r.pointsCost,
+    isActive: r.isActive,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+  };
+}
 
+function mapProfile(p: any) {
+  return {
+    id: p.id,
+    familyId: p.familyId,
+    userId: p.userId,
+    name: p.name,
+    avatarUrl: p.avatarUrl,
+    role: p.role,
+    pinCode: p.pinCode,
+    createdAt: p.createdAt.toISOString(),
+    updatedAt: p.updatedAt.toISOString(),
+  };
+}
+
+export async function getRewards(): Promise<Reward[]> {
+  const familyId = await getCurrentFamilyId();
   if (!familyId) {
     throw new Error('No family found');
   }
 
-  const { data, error } = await supabase
-    .from('rewards')
-    .select('*')
-    .eq('family_id', familyId)
-    .order('points_cost', { ascending: true });
+  const data = await prisma.reward.findMany({
+    where: { familyId },
+    orderBy: { pointsCost: 'asc' },
+  });
 
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  return data.map(reward => ({
-    id: reward.id,
-    familyId: reward.family_id,
-    name: reward.name,
-    description: reward.description,
-    pointsCost: reward.points_cost,
-    isActive: reward.is_active,
-    createdAt: reward.created_at,
-    updatedAt: reward.updated_at,
-  }));
+  return data.map(mapReward);
 }
 
-/**
- * Get active rewards only
- */
 export async function getActiveRewards(): Promise<Reward[]> {
   const rewards = await getRewards();
   return rewards.filter(r => r.isActive);
 }
 
-/**
- * Create a new reward
- */
 export async function createReward(input: CreateRewardInput): Promise<Reward> {
-  const supabase = await createClient();
   const familyId = await getCurrentFamilyId();
-
   if (!familyId) {
     throw new Error('No family found');
   }
 
-  const { data, error } = await supabase
-    .from('rewards')
-    .insert({
-      family_id: familyId,
+  const data = await prisma.reward.create({
+    data: {
+      familyId,
       name: input.name,
       description: input.description || null,
-      points_cost: input.pointsCost,
-      is_active: true,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
+      pointsCost: input.pointsCost,
+      isActive: true,
+    },
+  });
 
   revalidatePath('/parent/rewards');
   revalidatePath('/kid/rewards');
 
-  return {
-    id: data.id,
-    familyId: data.family_id,
-    name: data.name,
-    description: data.description,
-    pointsCost: data.points_cost,
-    isActive: data.is_active,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-  };
+  return mapReward(data);
 }
 
-/**
- * Update a reward
- */
 export async function updateReward(rewardId: string, input: UpdateRewardInput): Promise<Reward> {
-  const supabase = await createClient();
-
   const updateData: Record<string, unknown> = {};
   if (input.name !== undefined) updateData.name = input.name;
   if (input.description !== undefined) updateData.description = input.description;
-  if (input.pointsCost !== undefined) updateData.points_cost = input.pointsCost;
-  if (input.isActive !== undefined) updateData.is_active = input.isActive;
+  if (input.pointsCost !== undefined) updateData.pointsCost = input.pointsCost;
+  if (input.isActive !== undefined) updateData.isActive = input.isActive;
 
-  const { data, error } = await supabase
-    .from('rewards')
-    .update(updateData)
-    .eq('id', rewardId)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const data = await prisma.reward.update({
+    where: { id: rewardId },
+    data: updateData,
+  });
 
   revalidatePath('/parent/rewards');
   revalidatePath('/kid/rewards');
 
-  return {
-    id: data.id,
-    familyId: data.family_id,
-    name: data.name,
-    description: data.description,
-    pointsCost: data.points_cost,
-    isActive: data.is_active,
-    createdAt: data.created_at,
-    updatedAt: data.updated_at,
-  };
+  return mapReward(data);
 }
 
-/**
- * Delete a reward
- */
 export async function deleteReward(rewardId: string): Promise<void> {
-  const supabase = await createClient();
-
-  const { error } = await supabase
-    .from('rewards')
-    .delete()
-    .eq('id', rewardId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.reward.delete({ where: { id: rewardId } });
 
   revalidatePath('/parent/rewards');
   revalidatePath('/kid/rewards');
 }
 
-/**
- * Request a reward redemption (kid action)
- */
 export async function requestRedemption(rewardId: string, profileId: string): Promise<RewardRedemption> {
-  const supabase = await createClient();
+  const reward = await prisma.reward.findUnique({ where: { id: rewardId } });
+  const profile = await prisma.profile.findUnique({
+    where: { id: profileId },
+    select: { name: true },
+  });
 
-  // Get the reward and profile details
-  const { data: reward } = await supabase
-    .from('rewards')
-    .select('*, family_id')
-    .eq('id', rewardId)
-    .single();
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('name')
-    .eq('id', profileId)
-    .single();
-
-  const { data, error } = await supabase
-    .from('reward_redemptions')
-    .insert({
-      reward_id: rewardId,
-      profile_id: profileId,
+  const data = await prisma.rewardRedemption.create({
+    data: {
+      rewardId,
+      profileId,
       status: 'requested',
-    })
-    .select()
-    .single();
+    },
+  });
 
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  // Send notification to parents
   if (reward && profile) {
-    const { data: parentProfiles } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .eq('family_id', reward.family_id)
-      .in('role', ['owner', 'parent', 'helper']);
+    const parentProfiles = await prisma.profile.findMany({
+      where: {
+        familyId: reward.familyId,
+        role: { in: ['owner', 'parent', 'helper'] },
+        userId: { not: null },
+      },
+      select: { user: { select: { email: true } } },
+    });
 
-    if (parentProfiles && parentProfiles.length > 0) {
-      const userIds = parentProfiles.map(p => p.user_id).filter(Boolean);
+    const parentEmails = parentProfiles
+      .map(p => p.user?.email)
+      .filter((e): e is string => !!e);
 
-      const { data: users } = await supabase
-        .from('users')
-        .select('email')
-        .in('id', userIds);
-
-      if (users && users.length > 0) {
-        const parentEmails = users.map(u => u.email);
-        await notifyRewardRequested(
-          parentEmails,
-          profile.name,
-          reward.name,
-          reward.points_cost
-        );
-      }
+    if (parentEmails.length > 0) {
+      await notifyRewardRequested(parentEmails, profile.name, reward.name, reward.pointsCost);
     }
   }
 
@@ -213,160 +139,103 @@ export async function requestRedemption(rewardId: string, profileId: string): Pr
 
   return {
     id: data.id,
-    rewardId: data.reward_id,
-    profileId: data.profile_id,
-    status: data.status,
-    requestedAt: data.requested_at,
-    resolvedAt: data.resolved_at,
-    resolvedByProfileId: data.resolved_by_profile_id,
+    rewardId: data.rewardId,
+    profileId: data.profileId,
+    status: data.status as RewardRedemption['status'],
+    requestedAt: data.requestedAt.toISOString(),
+    resolvedAt: data.resolvedAt?.toISOString() || null,
+    resolvedByProfileId: data.resolvedByProfileId,
   };
 }
 
-/**
- * Get all redemptions for the family
- */
 export async function getRedemptions(): Promise<RedemptionWithDetails[]> {
-  const supabase = await createClient();
   const familyId = await getCurrentFamilyId();
-
   if (!familyId) {
     throw new Error('No family found');
   }
 
-  const { data, error } = await supabase
-    .from('reward_redemptions')
-    .select(`
-      *,
-      reward:rewards(*),
-      profile:profiles!reward_redemptions_profile_id_fkey(*),
-      resolved_by:profiles!reward_redemptions_resolved_by_profile_id_fkey(*)
-    `)
-    .eq('reward.family_id', familyId)
-    .order('requested_at', { ascending: false });
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const data = await prisma.rewardRedemption.findMany({
+    where: {
+      reward: { familyId },
+    },
+    include: {
+      reward: true,
+      profile: true,
+      resolvedBy: true,
+    },
+    orderBy: { requestedAt: 'desc' },
+  });
 
   return data.map((redemption: any) => ({
     id: redemption.id,
-    rewardId: redemption.reward_id,
-    profileId: redemption.profile_id,
+    rewardId: redemption.rewardId,
+    profileId: redemption.profileId,
     status: redemption.status,
-    requestedAt: redemption.requested_at,
-    resolvedAt: redemption.resolved_at,
-    resolvedByProfileId: redemption.resolved_by_profile_id,
-    reward: {
-      id: redemption.reward.id,
-      familyId: redemption.reward.family_id,
-      name: redemption.reward.name,
-      description: redemption.reward.description,
-      pointsCost: redemption.reward.points_cost,
-      isActive: redemption.reward.is_active,
-      createdAt: redemption.reward.created_at,
-      updatedAt: redemption.reward.updated_at,
-    },
-    profile: {
-      id: redemption.profile.id,
-      familyId: redemption.profile.family_id,
-      userId: redemption.profile.user_id,
-      name: redemption.profile.name,
-      avatarUrl: redemption.profile.avatar_url,
-      role: redemption.profile.role,
-      pinCode: redemption.profile.pin_code,
-      createdAt: redemption.profile.created_at,
-      updatedAt: redemption.profile.updated_at,
-    },
-    resolvedBy: redemption.resolved_by ? {
-      id: redemption.resolved_by.id,
-      familyId: redemption.resolved_by.family_id,
-      userId: redemption.resolved_by.user_id,
-      name: redemption.resolved_by.name,
-      avatarUrl: redemption.resolved_by.avatar_url,
-      role: redemption.resolved_by.role,
-      pinCode: redemption.resolved_by.pin_code,
-      createdAt: redemption.resolved_by.created_at,
-      updatedAt: redemption.resolved_by.updated_at,
-    } : null,
+    requestedAt: redemption.requestedAt.toISOString(),
+    resolvedAt: redemption.resolvedAt?.toISOString() || null,
+    resolvedByProfileId: redemption.resolvedByProfileId,
+    reward: mapReward(redemption.reward),
+    profile: mapProfile(redemption.profile),
+    resolvedBy: redemption.resolvedBy ? mapProfile(redemption.resolvedBy) : null,
   }));
 }
 
-/**
- * Get pending redemptions
- */
 export async function getPendingRedemptions(): Promise<RedemptionWithDetails[]> {
   const redemptions = await getRedemptions();
   return redemptions.filter(r => r.status === 'requested');
 }
 
-/**
- * Approve and redeem a reward (deduct points)
- */
 export async function approveRedemption(redemptionId: string, approvedByProfileId: string): Promise<void> {
-  const supabase = await createClient();
+  const redemption = await prisma.rewardRedemption.findUnique({
+    where: { id: redemptionId },
+    include: { reward: true, profile: true },
+  });
 
-  // Get the redemption details
-  const { data: redemption, error: redemptionError } = await supabase
-    .from('reward_redemptions')
-    .select('*, reward:rewards(*), profile:profiles!reward_redemptions_profile_id_fkey(*)')
-    .eq('id', redemptionId)
-    .single();
-
-  if (redemptionError || !redemption) {
+  if (!redemption) {
     throw new Error('Redemption not found');
   }
 
-  // Update redemption status
-  await supabase
-    .from('reward_redemptions')
-    .update({
+  await prisma.rewardRedemption.update({
+    where: { id: redemptionId },
+    data: {
       status: 'redeemed',
-      resolved_at: new Date().toISOString(),
-      resolved_by_profile_id: approvedByProfileId,
-    })
-    .eq('id', redemptionId);
+      resolvedAt: new Date(),
+      resolvedByProfileId: approvedByProfileId,
+    },
+  });
 
-  // Create points transaction (deduct points)
-  await supabase
-    .from('points_transactions')
-    .insert({
-      profile_id: redemption.profile_id,
-      amount: -redemption.reward.points_cost,
+  await prisma.pointsTransaction.create({
+    data: {
+      profileId: redemption.profileId,
+      amount: -redemption.reward.pointsCost,
       reason: 'reward_redemption',
-      related_redemption_id: redemptionId,
-      created_by_profile_id: approvedByProfileId,
-    });
+      relatedRedemptionId: redemptionId,
+      createdByProfileId: approvedByProfileId,
+    },
+  });
 
-  // Get kid's email if available
-  const kidEmail = redemption.profile.user_id ? (
-    await supabase
-      .from('users')
-      .select('email')
-      .eq('id', redemption.profile.user_id)
-      .single()
-  ).data?.email : null;
+  const kidEmail = redemption.profile.userId
+    ? (await prisma.user.findUnique({
+        where: { id: redemption.profile.userId },
+        select: { email: true },
+      }))?.email ?? null
+    : null;
 
-  // Notify kid
   await notifyRewardApproved(kidEmail, redemption.reward.name);
 
   revalidatePath('/parent');
   revalidatePath('/kid');
 }
 
-/**
- * Reject a redemption request
- */
 export async function rejectRedemption(redemptionId: string, rejectedByProfileId: string): Promise<void> {
-  const supabase = await createClient();
-
-  await supabase
-    .from('reward_redemptions')
-    .update({
+  await prisma.rewardRedemption.update({
+    where: { id: redemptionId },
+    data: {
       status: 'rejected',
-      resolved_at: new Date().toISOString(),
-      resolved_by_profile_id: rejectedByProfileId,
-    })
-    .eq('id', redemptionId);
+      resolvedAt: new Date(),
+      resolvedByProfileId: rejectedByProfileId,
+    },
+  });
 
   revalidatePath('/parent/dashboard');
   revalidatePath('/parent/rewards');

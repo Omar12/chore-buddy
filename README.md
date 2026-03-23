@@ -4,7 +4,7 @@ A family-focused chores and rewards app that helps parents assign chores to kids
 
 ## Features
 
-- **Family Management**: Create a family account and invite co-parents, helpers, and kids
+- **Family Management**: Create a family account and add co-parents, helpers, and kids
 - **Chore System**: Create, assign, and track chores with point values
 - **Points & Rewards**: Kids earn points for completing chores and can redeem them for rewards
 - **Profile Selection**: Netflix-style profile picker for seamless switching between family members
@@ -16,18 +16,17 @@ A family-focused chores and rewards app that helps parents assign chores to kids
 ## Tech Stack
 
 - **Frontend**: Next.js 15 (App Router), React 18, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes (Server Actions)
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
+- **Backend**: Next.js Server Actions
+- **Database**: SQLite via Prisma ORM
+- **Authentication**: NextAuth.js (Auth.js) with email/password credentials
 - **Testing**: Jest, React Testing Library
-- **Deployment**: Vercel-ready
+- **Deployment**: Vercel-ready, Docker-ready
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+ and npm
-- A Supabase account (free tier works)
 - Git
 
 ### Installation
@@ -44,31 +43,24 @@ cd chore-buddy
 npm install
 ```
 
-3. **Set up Supabase**
-
-   a. Create a new project at [supabase.com](https://supabase.com)
-
-   b. Run the database migration:
-      - Go to the SQL Editor in your Supabase dashboard
-      - Copy the contents of `supabase/migrations/20240101000000_init_schema.sql`
-      - Run it in the SQL Editor
-
-   c. Get your project credentials:
-      - Go to Project Settings > API
-      - Copy the Project URL and anon/public key
-
-4. **Configure environment variables**
+3. **Configure environment variables**
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Edit `.env.local` and add your Supabase credentials:
+Edit `.env`:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=your-project-url.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="generate-a-random-secret-here"
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+4. **Set up the database**
+
+```bash
+npx prisma migrate dev
 ```
 
 5. **Run the development server**
@@ -117,9 +109,9 @@ docker-start.bat           # Windows
 
 ```bash
 # 1. Set up environment variables
-cp .env.docker.example .env
+cp .env.example .env
 
-# 2. Edit .env with your Supabase credentials
+# 2. Edit .env with your settings
 
 # 3. Build and run
 docker-compose up -d
@@ -145,7 +137,8 @@ docker-compose logs -f app
 ```
 chore-buddy/
 ├── app/                          # Next.js App Router
-│   ├── api/                      # Server actions for backend logic
+│   ├── api/                      # Server actions + NextAuth route
+│   │   ├── auth/[...nextauth]/   # NextAuth.js route handler
 │   │   ├── chores/              # Chore management
 │   │   ├── profiles/            # Profile management
 │   │   ├── rewards/             # Rewards and redemptions
@@ -155,8 +148,8 @@ chore-buddy/
 │   │   ├── register/
 │   │   └── forgot-password/
 │   ├── profile/select/          # Netflix-style profile selector
-│   ├── parent/                  # Parent dashboard & pages (to be implemented)
-│   ├── kid/                     # Kid dashboard & pages (to be implemented)
+│   ├── parent/                  # Parent dashboard & pages
+│   ├── kid/                     # Kid dashboard & pages
 │   └── layout.tsx               # Root layout with global styles
 ├── components/                   # React components
 │   └── ui/                      # Reusable UI components
@@ -166,32 +159,31 @@ chore-buddy/
 │       ├── Loading.tsx
 │       └── EmptyState.tsx
 ├── lib/                         # Utility functions and services
-│   ├── supabase/               # Supabase client setup
-│   │   ├── client.ts           # Browser client
-│   │   └── server.ts           # Server client
-│   ├── utils/                  # Helper utilities
-│   │   ├── points.ts           # Points calculation
-│   │   ├── dates.ts            # Date formatting
-│   │   └── index.ts            # General utilities
-│   └── services/               # Business logic services
-│       └── notifications.ts    # Email notifications (stub)
+│   ├── auth.ts                  # NextAuth.js configuration
+│   ├── db.ts                    # Prisma client singleton
+│   ├── utils/                   # Helper utilities
+│   │   ├── points.ts            # Points calculation
+│   │   ├── dates.ts             # Date formatting
+│   │   └── index.ts             # General utilities
+│   └── services/                # Business logic services
+│       └── notifications.ts     # Email notifications (stub)
+├── prisma/                      # Prisma ORM
+│   ├── schema.prisma            # Database schema
+│   └── migrations/              # Database migrations
 ├── types/                       # TypeScript type definitions
-│   ├── database.types.ts       # Database schema types
-│   └── index.ts                # Domain model types
-├── supabase/                    # Database migrations
-│   └── migrations/
-│       └── 20240101000000_init_schema.sql
+│   ├── next-auth.d.ts           # NextAuth session type augmentation
+│   └── index.ts                 # Domain model types
 ├── docs/                        # Documentation
-│   └── database-schema.md      # Database schema documentation
-├── middleware.ts                # Next.js middleware for auth
-└── jest.config.js              # Jest configuration
+│   └── database-schema.md       # Database schema documentation
+├── middleware.ts                 # Next.js middleware for auth
+└── jest.config.js               # Jest configuration
 ```
 
 ## Database Schema
 
-The application uses a PostgreSQL database with the following main tables:
+The application uses a SQLite database (via Prisma) with the following main tables:
 
-- **users**: Adult accounts (synced with Supabase Auth)
+- **users**: Adult accounts with hashed passwords (managed by NextAuth.js)
 - **families**: Family units
 - **profiles**: Family members (both adults and kids)
 - **chores**: Tasks assigned to kids
@@ -206,7 +198,7 @@ See [docs/database-schema.md](docs/database-schema.md) for detailed documentatio
 
 ### Authentication Flow
 
-1. User signs up/logs in with email and password (Supabase Auth)
+1. User signs up/logs in with email and password (NextAuth.js Credentials provider)
 2. On successful auth, user is redirected to profile selector
 3. User selects a profile (adult or kid)
 4. Profile ID and role are stored in session storage
@@ -217,7 +209,7 @@ See [docs/database-schema.md](docs/database-schema.md) for detailed documentatio
 - **Owner/Parent/Helper**: Can manage all family data (chores, rewards, profiles)
 - **Kid**: Can view their own chores, update chore status, request rewards
 
-Row-level security (RLS) policies in Supabase ensure data isolation and access control.
+Authorization is enforced in application code — each server action verifies family membership before performing operations.
 
 ### Points System
 
@@ -469,7 +461,6 @@ async function createRecurringChores() {
 
 3. Run this function daily using:
    - Vercel Cron Jobs
-   - Supabase Edge Functions
    - GitHub Actions
 
 ### Adding Push Notifications
@@ -550,13 +541,14 @@ Quick example for production:
 ```bash
 # Build the image
 docker build -t chore-buddy:latest \
-  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
-  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=your-key \
   --build-arg NEXT_PUBLIC_APP_URL=https://your-domain.com \
   .
 
 # Run the container
-docker run -d -p 3000:3000 --name chore-buddy chore-buddy:latest
+docker run -d -p 3000:3000 \
+  -e DATABASE_URL="file:./dev.db" \
+  -e AUTH_SECRET="your-secret" \
+  --name chore-buddy chore-buddy:latest
 ```
 
 ### Deploying to Vercel
@@ -571,8 +563,8 @@ vercel
 ```
 
 3. Add environment variables in Vercel dashboard:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `DATABASE_URL`
+   - `AUTH_SECRET`
    - `NEXT_PUBLIC_APP_URL`
 
 4. Deploy:
@@ -581,13 +573,7 @@ vercel
 vercel --prod
 ```
 
-### Configuring Supabase for Production
-
-1. Go to Authentication > URL Configuration
-2. Add your production URL to "Site URL"
-3. Add redirect URLs for auth callbacks
-4. Enable Row Level Security on all tables
-5. Review and test all RLS policies
+> **Note**: SQLite works for single-instance deployments. For multi-instance or serverless deployments (like Vercel), consider migrating to Postgres or using a hosted SQLite service like Turso.
 
 ## Contributing
 
@@ -603,9 +589,8 @@ For issues or questions:
 
 1. Check the [docs/database-schema.md](docs/database-schema.md) for data model questions
 2. Review the API documentation in this README
-3. Check Supabase logs for database/auth issues
-4. Review Next.js documentation for framework questions
+3. Review Next.js documentation for framework questions
 
 ---
 
-Built with ❤️ for families who want to make chores fun!
+Built with love for families who want to make chores fun!

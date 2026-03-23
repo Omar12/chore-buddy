@@ -15,10 +15,10 @@ Chore Buddy implements multiple layers of security:
 
 ### Application Security
 
-- **Authentication**: Supabase Auth with email/password
-- **Authorization**: Row-level security (RLS) in database
-- **Session Management**: Secure cookie-based sessions
-- **Data Isolation**: Each family's data is completely isolated
+- **Authentication**: NextAuth.js with email/password credentials and bcrypt password hashing
+- **Authorization**: Application-level checks in every server action (family membership verification)
+- **Session Management**: JWT-based sessions via NextAuth.js with secure cookies
+- **Data Isolation**: Each family's data is completely isolated via server-side authorization
 - **Input Validation**: TypeScript type checking and Zod validation
 - **CSRF Protection**: Built into Next.js App Router
 
@@ -27,21 +27,21 @@ Chore Buddy implements multiple layers of security:
 See [docs/DOCKER-SECURITY.md](docs/DOCKER-SECURITY.md) for comprehensive Docker security documentation.
 
 **Key features:**
-- ✅ Latest Node.js 20 LTS with security patches
-- ✅ Alpine Linux 3.20 base image
-- ✅ Non-root user execution
-- ✅ Multi-stage builds (minimal attack surface)
-- ✅ Security updates installed (`apk upgrade`)
-- ✅ Health checks for availability
-- ✅ Read-only root filesystem support
-- ✅ Resource limits configurable
+- Latest Node.js 20 LTS with security patches
+- Alpine Linux 3.20 base image
+- Non-root user execution
+- Multi-stage builds (minimal attack surface)
+- Security updates installed (`apk upgrade`)
+- Health checks for availability
+- Read-only root filesystem support
+- Resource limits configurable
 
 ### Database Security
 
-- **Row-Level Security (RLS)**: Enabled on all tables
-- **Connection Security**: Connections via Supabase encrypted
-- **SQL Injection**: Protected via Supabase client
-- **Backup**: Managed by Supabase
+- **SQLite via Prisma**: Type-safe queries prevent SQL injection
+- **Local database file**: No network exposure by default
+- **Prisma parameterized queries**: All user input is parameterized automatically
+- **Password hashing**: bcrypt with salt rounds for all user passwords
 
 ## Reporting a Vulnerability
 
@@ -94,10 +94,10 @@ npm outdated
 
 Never commit secrets:
 ```bash
-# ❌ BAD
+# BAD
 git add .env
 
-# ✅ GOOD
+# GOOD
 # Use .env.example as template
 # Set environment variables in deployment platform
 ```
@@ -122,21 +122,17 @@ docker pull node:20-alpine
 docker build --no-cache -t chore-buddy:latest .
 ```
 
-### 4. Database Security
+### 4. AUTH_SECRET
 
-In Supabase:
-- ✅ Enable RLS on all tables
-- ✅ Review RLS policies regularly
-- ✅ Use service role key only on backend
-- ✅ Never expose service role key to client
-- ✅ Enable 2FA on Supabase account
+- Generate a strong random secret for `AUTH_SECRET` in production
+- Use `openssl rand -base64 32` to generate one
+- Never reuse secrets across environments
 
 ### 5. Monitor Access
 
 - Set up logging and monitoring
 - Review access logs regularly
 - Set up alerts for suspicious activity
-- Monitor Supabase dashboard for unusual queries
 
 ## Security Checklist for Production
 
@@ -147,12 +143,11 @@ Use this checklist before deploying:
 - [ ] Docker image scan shows acceptable vulnerabilities
 - [ ] Environment variables are set (not hardcoded)
 - [ ] HTTPS is enabled
-- [ ] Supabase RLS is enabled on all tables
-- [ ] Service role key is not exposed to client
+- [ ] AUTH_SECRET is a strong random value
+- [ ] Database file is not publicly accessible
 - [ ] Backup strategy is in place
 - [ ] Monitoring and logging are configured
 - [ ] Rate limiting is configured (if needed)
-- [ ] 2FA is enabled on critical accounts
 
 ## Known Limitations
 
@@ -204,16 +199,14 @@ We follow this process for security updates:
 - [Database Schema Documentation](docs/database-schema.md)
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/)
-- [Supabase Security](https://supabase.com/docs/guides/auth/security)
 
 ## Questions?
 
 For security-related questions:
 - Review this document first
 - Check [docs/DOCKER-SECURITY.md](docs/DOCKER-SECURITY.md)
-- Review Supabase documentation
 - Contact the repository owner
 
 ---
 
-**Last Updated**: November 2024
+**Last Updated**: March 2026

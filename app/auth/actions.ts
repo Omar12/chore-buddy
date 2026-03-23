@@ -1,6 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { prisma } from '@/lib/db';
+import { signIn as nextAuthSignIn, signOut as nextAuthSignOut, auth } from '@/lib/auth';
+import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
@@ -9,133 +11,99 @@ export interface AuthResponse {
   success?: boolean;
 }
 
-/**
- * Register a new user with email and password
- */
 export async function signUp(email: string, password: string, familyName: string): Promise<AuthResponse> {
-  const supabase = await createClient();
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return { error: 'An account with this email already exists' };
+  }
 
-  // Sign up the user
-  const { data: authData, error: signUpError } = await supabase.auth.signUp({
-    email,
-    password,
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      hashedPassword,
+    },
   });
 
-  if (signUpError) {
-    return { error: signUpError.message };
-  }
-
-  if (!authData.user) {
-    return { error: 'Failed to create user account' };
-  }
-
-  // Create the family
-  const { data: family, error: familyError } = await supabase
-    .from('families')
-    .insert({
+  await prisma.family.create({
+    data: {
       name: familyName,
-      owner_id: authData.user.id,
-    })
-    .select()
-    .single();
-
-  if (familyError || !family) {
-    // return { error: 'Failed to create family. Please try again.' };
-    console.log(familyError)
-    return { error: `Error! ${familyError}` };
-  }
-
-  // Create the owner profile
-  const { error: profileError } = await supabase
-    .from('profiles')
-    .insert({
-      family_id: family.id,
-      user_id: authData.user.id,
-      name: email.split('@')[0], // Default name from email
-      role: 'owner',
-    });
-
-  if (profileError) {
-    return { error: 'Failed to create profile. Please try again.' };
-  }
-
-  revalidatePath('/', 'layout');
-  redirect('/profile/select');
-}
-
-/**
- * Sign in an existing user
- */
-export async function signIn(email: string, password: string): Promise<AuthResponse> {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
+      ownerId: user.id,
+      profiles: {
+        create: {
+          userId: user.id,
+          name: email.split('@')[0],
+          role: 'owner',
+        },
+      },
+    },
   });
 
-  if (error) {
-    return { error: error.message };
+  // Sign in after registration
+  try {
+    await nextAuthSignIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+  } catch {
+    // Sign in may throw on redirect, that's okay
   }
 
   revalidatePath('/', 'layout');
   redirect('/profile/select');
 }
 
-/**
- * Sign out the current user
- */
+export async function signIn(email: string, password: string): Promise<AuthResponse> {
+  try {
+    await nextAuthSignIn('credentials', {
+      email,
+      password,
+      redirect: false,
+    });
+  } catch {
+    return { error: 'Invalid email or password' };
+  }
+
+  revalidatePath('/', 'layout');
+  redirect('/profile/select');
+}
+
 export async function signOut(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  await nextAuthSignOut({ redirect: false });
   revalidatePath('/', 'layout');
   redirect('/auth/login');
 }
 
-/**
- * Request password reset email
- */
 export async function resetPassword(email: string): Promise<AuthResponse> {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
+  // Stub — no email service configured
   return { success: true };
 }
 
-/**
- * Update password after reset
- */
 export async function updatePassword(newPassword: string): Promise<AuthResponse> {
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.updateUser({
-    password: newPassword,
-  });
-
-  if (error) {
-    return { error: error.message };
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: 'Not authenticated' };
   }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { hashedPassword },
+  });
 
   return { success: true };
 }
 
-/**
- * Get the current authenticated user
- */
 export async function getCurrentUser() {
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-
-  if (error || !user) {
+  const session = await auth();
+  if (!session?.user?.id) {
     return null;
   }
 
-  return user;
+  return {
+    id: session.user.id,
+    email: session.user.email,
+  };
 }

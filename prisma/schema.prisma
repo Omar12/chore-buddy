@@ -1,0 +1,148 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  hashedPassword String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  families Family[]
+  profiles Profile[]
+
+  @@map("users")
+}
+
+model Family {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  profiles Profile[]
+  chores   Chore[]
+  rewards  Reward[]
+
+  @@map("families")
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  familyId  String
+  userId    String?
+  name      String
+  avatarUrl String?
+  role      String   // owner, parent, helper, kid
+  pinCode   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  family              Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user                User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  assignedChores      Chore[]             @relation("AssignedTo")
+  createdChores       Chore[]             @relation("CreatedBy")
+  choreComments       ChoreComment[]
+  rewardRedemptions   RewardRedemption[]  @relation("RedemptionProfile")
+  resolvedRedemptions RewardRedemption[]  @relation("ResolvedBy")
+  pointsTransactions  PointsTransaction[] @relation("TransactionProfile")
+  createdTransactions PointsTransaction[] @relation("TransactionCreatedBy")
+
+  @@map("profiles")
+}
+
+model Chore {
+  id                  String   @id @default(cuid())
+  familyId            String
+  assignedToProfileId String
+  title               String
+  description         String?
+  pointsValue         Int
+  dueDate             String?
+  recurrenceRule      String?
+  status              String   @default("not_started") // not_started, in_progress, done, pending_review, completed
+  createdByProfileId  String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  family     Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  assignedTo Profile            @relation("AssignedTo", fields: [assignedToProfileId], references: [id], onDelete: Cascade)
+  createdBy  Profile            @relation("CreatedBy", fields: [createdByProfileId], references: [id], onDelete: Cascade)
+  comments   ChoreComment[]
+  transactions PointsTransaction[]
+
+  @@map("chores")
+}
+
+model ChoreComment {
+  id        String   @id @default(cuid())
+  choreId   String
+  profileId String
+  comment   String
+  createdAt DateTime @default(now())
+
+  chore   Chore   @relation(fields: [choreId], references: [id], onDelete: Cascade)
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("chore_comments")
+}
+
+model Reward {
+  id          String   @id @default(cuid())
+  familyId    String
+  name        String
+  description String?
+  pointsCost  Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  family      Family             @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  redemptions RewardRedemption[]
+
+  @@map("rewards")
+}
+
+model RewardRedemption {
+  id                  String    @id @default(cuid())
+  rewardId            String
+  profileId           String
+  status              String    @default("requested") // requested, approved, redeemed, rejected
+  requestedAt         DateTime  @default(now())
+  resolvedAt          DateTime?
+  resolvedByProfileId String?
+
+  reward     Reward  @relation(fields: [rewardId], references: [id], onDelete: Cascade)
+  profile    Profile @relation("RedemptionProfile", fields: [profileId], references: [id], onDelete: Cascade)
+  resolvedBy Profile? @relation("ResolvedBy", fields: [resolvedByProfileId], references: [id], onDelete: SetNull)
+  transactions PointsTransaction[]
+
+  @@map("reward_redemptions")
+}
+
+model PointsTransaction {
+  id                  String   @id @default(cuid())
+  profileId           String
+  amount              Int
+  reason              String   // chore_completion, reward_redemption, manual_adjustment
+  relatedChoreId      String?
+  relatedRedemptionId String?
+  notes               String?
+  createdByProfileId  String
+  createdAt           DateTime @default(now())
+
+  profile    Profile           @relation("TransactionProfile", fields: [profileId], references: [id], onDelete: Cascade)
+  createdBy  Profile           @relation("TransactionCreatedBy", fields: [createdByProfileId], references: [id], onDelete: Cascade)
+  chore      Chore?            @relation(fields: [relatedChoreId], references: [id], onDelete: SetNull)
+  redemption RewardRedemption? @relation(fields: [relatedRedemptionId], references: [id], onDelete: SetNull)
+
+  @@map("points_transactions")
+}

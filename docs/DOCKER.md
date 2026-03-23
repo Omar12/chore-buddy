@@ -6,7 +6,6 @@ This guide explains how to run Chore Buddy using Docker.
 
 - [Docker](https://docs.docker.com/get-docker/) (20.10 or later)
 - [Docker Compose](https://docs.docker.com/compose/install/) (1.29 or later)
-- A Supabase account and project
 
 ## Quick Start
 
@@ -15,14 +14,14 @@ This guide explains how to run Chore Buddy using Docker.
 Create a `.env` file in the project root:
 
 ```bash
-cp .env.docker.example .env
+cp .env.example .env
 ```
 
-Edit `.env` and add your Supabase credentials:
+Edit `.env`:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+DATABASE_URL="file:./dev.db"
+AUTH_SECRET="generate-a-random-secret-here"
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -99,6 +98,9 @@ docker-compose exec app sh
 
 # Run npm commands
 docker-compose exec app npm run lint
+
+# Run Prisma commands
+docker-compose exec app npx prisma studio
 ```
 
 ### Clean up everything
@@ -121,8 +123,6 @@ docker rmi chore-buddy-app
 ```bash
 # Build the image
 docker build \
-  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
-  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key \
   --build-arg NEXT_PUBLIC_APP_URL=https://your-domain.com \
   -t chore-buddy:latest .
 
@@ -131,8 +131,8 @@ docker run -d \
   -p 3000:3000 \
   --name chore-buddy \
   --restart unless-stopped \
-  -e NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
-  -e NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key \
+  -e DATABASE_URL="file:./dev.db" \
+  -e AUTH_SECRET="your-production-secret" \
   -e NEXT_PUBLIC_APP_URL=https://your-domain.com \
   chore-buddy:latest
 ```
@@ -148,8 +148,6 @@ docker buildx create --name multiarch --use
 # Build for multiple platforms
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --build-arg NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co \
-  --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key \
   --build-arg NEXT_PUBLIC_APP_URL=https://your-domain.com \
   -t your-registry/chore-buddy:latest \
   --push .
@@ -188,7 +186,7 @@ gcloud run deploy chore-buddy \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
-  --set-env-vars NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co,NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+  --set-env-vars DATABASE_URL="file:./dev.db",AUTH_SECRET="your-secret"
 ```
 
 ### Deploy to DigitalOcean App Platform
@@ -211,8 +209,8 @@ fly auth login
 fly launch
 
 # Set secrets
-fly secrets set NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-fly secrets set NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+fly secrets set AUTH_SECRET="your-production-secret"
+fly secrets set DATABASE_URL="file:./dev.db"
 
 # Deploy
 fly deploy
@@ -232,7 +230,7 @@ The Dockerfile uses a multi-stage build for optimization:
 - Creates optimized production bundle
 
 ### Stage 3: Runner
-- Minimal runtime image (node:18-alpine)
+- Minimal runtime image (node:20-alpine)
 - Runs as non-root user (nextjs)
 - Only includes necessary files
 - Final image size: ~150-200 MB
@@ -243,14 +241,14 @@ The Dockerfile uses a multi-stage build for optimization:
 
 These are set during `docker build` and embedded in the JavaScript bundle:
 
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
 - `NEXT_PUBLIC_APP_URL` - Your application URL
 
 ### Runtime variables
 
 These can be changed without rebuilding:
 
+- `DATABASE_URL` - SQLite database path (default: `file:./dev.db`)
+- `AUTH_SECRET` - Secret for NextAuth.js session encryption
 - `PORT` - Port to listen on (default: 3000)
 - `NODE_ENV` - Environment (production/development)
 
@@ -284,7 +282,6 @@ docker-compose logs app
 
 Common issues:
 - Missing environment variables
-- Invalid Supabase credentials
 - Port conflicts
 
 ### Out of memory
@@ -379,7 +376,7 @@ For development with hot reload:
 
 ```dockerfile
 # Create a Dockerfile.dev
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 RUN npm install

@@ -192,7 +192,7 @@ metadata:
   name: chore-buddy-secrets
 type: Opaque
 data:
-  SUPABASE_KEY: <base64-encoded-key>
+  AUTH_SECRET: <base64-encoded-secret>
 ```
 
 **For AWS ECS:**
