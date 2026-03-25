@@ -47,7 +47,7 @@ export default function KidNav() {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-blue-500 to-purple-600">
+    <nav className="bg-gradient-to-r from-primary-500 to-secondary-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex">
@@ -63,6 +63,7 @@ export default function KidNav() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={isActive ? 'page' : undefined}
                     className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium ${
                       isActive
                         ? 'border-white text-white'
@@ -106,10 +107,11 @@ export default function KidNav() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? 'page' : undefined}
                 className={`block pl-3 pr-4 py-2 border-l-4 text-base font-medium ${
                   isActive
-                    ? 'border-white text-white bg-blue-600'
-                    : 'border-transparent text-white/80 hover:bg-blue-600 hover:border-white/50'
+                    ? 'border-white text-white bg-primary-600'
+                    : 'border-transparent text-white/80 hover:bg-primary-600 hover:border-white/50'
                 }`}
               >
                 {item.label}
@@ -126,13 +128,13 @@ export default function KidNav() {
           <div className="mt-3 space-y-1">
             <button
               onClick={handleSwitchProfile}
-              className="block w-full text-left px-4 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-blue-600"
+              className="block w-full text-left px-4 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-primary-600"
             >
               Switch Profile
             </button>
             <button
               onClick={handleSignOut}
-              className="block w-full text-left px-4 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-blue-600"
+              className="block w-full text-left px-4 py-2 text-base font-medium text-white/80 hover:text-white hover:bg-primary-600"
             >
               Sign Out
             </button>

@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
           {success ? (
             <div className="space-y-4">
-              <div className="bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-4 py-3 rounded-lg text-sm">
+              <div className="bg-success-50 dark:bg-success-900/30 text-success-600 dark:text-success-400 px-4 py-3 rounded-lg text-sm">
                 Check your email for a password reset link.
               </div>
               <p className="text-sm text-gray-600 dark:text-gray-400">

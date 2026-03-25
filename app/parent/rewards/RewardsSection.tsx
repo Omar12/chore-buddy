@@ -45,7 +45,7 @@ export default function RewardsSection({ rewards }: RewardsSectionProps) {
               )}
 
               <div className="space-y-2">
-                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
+                <div className="text-lg font-bold text-primary-600 dark:text-primary-400">
                   {reward.pointsCost} points
                 </div>
 

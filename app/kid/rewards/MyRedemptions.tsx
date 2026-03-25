@@ -43,7 +43,7 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
               return {
                 badge: <Badge variant="success">✓ Approved</Badge>,
                 message: redemption.resolvedAt ? `Approved ${formatRelativeDate(redemption.resolvedAt)}` : 'Approved',
-                color: 'bg-green-50 dark:bg-green-900/20',
+                color: 'bg-success-50 dark:bg-success-900/20',
               };
             case 'rejected':
               return {
@@ -78,7 +78,7 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
               </div>
 
               <div className="flex items-center gap-4 text-sm">
-                <span className="font-medium text-blue-600 dark:text-blue-400">
+                <span className="font-medium text-primary-600 dark:text-primary-400">
                   {redemption.reward.pointsCost} points
                 </span>
                 {statusInfo.message && (
@@ -89,8 +89,8 @@ export default function MyRedemptions({ redemptions }: MyRedemptionsProps) {
               </div>
 
               {(redemption.status === 'approved' || redemption.status === 'redeemed') && (
-                <div className="mt-3 p-3 bg-green-100 dark:bg-green-900/30 rounded-md">
-                  <p className="text-sm text-green-800 dark:text-green-200">
+                <div className="mt-3 p-3 bg-success-100 dark:bg-success-900/30 rounded-md">
+                  <p className="text-sm text-success-800 dark:text-success-200">
                     🎉 Enjoy your reward! Ask your parents to give it to you.
                   </p>
                 </div>

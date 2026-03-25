@@ -113,7 +113,7 @@ export default async function ParentDashboard() {
                 No kids added yet.{' '}
                 <Link
                   href="/parent/settings"
-                  className="text-blue-600 hover:text-blue-500"
+                  className="text-primary-600 hover:text-primary-500"
                 >
                   Add your first kid
                 </Link>{' '}
@@ -128,7 +128,7 @@ export default async function ParentDashboard() {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle>{profile.name}</CardTitle>
-                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <div className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                       {points} pts
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export default async function ParentDashboard() {
                           </p>
                         )}
                         <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium text-blue-600 dark:text-blue-400">
+                          <span className="font-medium text-primary-600 dark:text-primary-400">
                             {chore.pointsValue} points
                           </span>
                           {chore.dueDate && (
@@ -257,7 +257,7 @@ export default async function ParentDashboard() {
                           <Badge variant="warning">Pending</Badge>
                         </div>
                         <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
-                          <span className="font-medium text-blue-600 dark:text-blue-400">
+                          <span className="font-medium text-primary-600 dark:text-primary-400">
                             {redemption.reward.pointsCost} points
                           </span>
                           <span>Requested: {formatRelativeDate(redemption.requestedAt)}</span>
