@@ -67,22 +67,24 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
         </p>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">{error}</p>
+          <div role="alert" className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Kid Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Select Kid <span className="text-red-500">*</span>
+            <label htmlFor="points-kid" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Select Kid <span className="text-red-500" aria-hidden="true">*</span>
             </label>
             <select
+              id="points-kid"
               value={selectedKid}
               onChange={(e) => setSelectedKid(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              aria-required="true"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               {kidsWithPoints.map((kid) => (
                 <option key={kid.id} value={kid.id}>
@@ -94,10 +96,10 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
 
           {/* Current Balance Display */}
           {selectedKidData && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+            <div className="p-3 bg-primary-50 dark:bg-primary-900/20 rounded-md">
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 <span className="font-medium">{selectedKidData.name}</span> currently has{' '}
-                <span className="font-bold text-blue-600 dark:text-blue-400">
+                <span className="font-bold text-primary-600 dark:text-primary-400">
                   {selectedKidData.totalPoints} points
                 </span>
               </p>
@@ -106,42 +108,46 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
 
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Points Amount <span className="text-red-500">*</span>
+            <label htmlFor="points-amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Points Amount <span className="text-red-500" aria-hidden="true">*</span>
             </label>
             <input
+              id="points-amount"
               type="number"
               value={amount}
               onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
               required
+              aria-required="true"
+              aria-describedby="points-amount-hint"
               placeholder="e.g., 10 or -5"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p id="points-amount-hint" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Use positive numbers to add points, negative to subtract
             </p>
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label htmlFor="points-reason" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Reason (optional)
             </label>
             <textarea
+              id="points-reason"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
               placeholder="e.g., Bonus for good behavior, Penalty for breaking rules..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
           </div>
 
           {/* Preview */}
           {amount !== 0 && selectedKidData && (
-            <div className={`p-3 rounded-md ${amount > 0 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
+            <div className={`p-3 rounded-md ${amount > 0 ? 'bg-success-50 dark:bg-success-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
               <p className="text-sm text-gray-700 dark:text-gray-300">
                 New balance will be:{' '}
-                <span className={`font-bold ${amount > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                <span className={`font-bold ${amount > 0 ? 'text-success-600 dark:text-success-400' : 'text-red-600 dark:text-red-400'}`}>
                   {selectedKidData.totalPoints + amount} points
                 </span>
                 {' '}({amount > 0 ? '+' : ''}{amount} points)

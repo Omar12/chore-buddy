@@ -57,13 +57,14 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
       <Card className="mb-4">
         <CardContent className="py-4">
           <div className="flex items-center gap-4">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label htmlFor="redemption-status-filter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
               Filter by Status:
             </label>
             <select
+              id="redemption-status-filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as RedemptionStatus)}
-              className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              className="px-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="all">All ({redemptions.length})</option>
               <option value="requested">Requested ({redemptions.filter(r => r.status === 'requested').length})</option>
@@ -123,7 +124,7 @@ export default function RedemptionsSection({ redemptions, profiles }: Redemption
 
                       <div className="space-y-1 text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex gap-3">
-                          <span className="font-medium text-blue-600 dark:text-blue-400">
+                          <span className="font-medium text-primary-600 dark:text-primary-400">
                             {redemption.reward.pointsCost} points
                           </span>
                           <span>Requested: {formatRelativeDate(redemption.requestedAt)}</span>

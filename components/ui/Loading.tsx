@@ -16,9 +16,11 @@ export function Loading({ size = 'md', className }: LoadingProps) {
     <div className={cn('flex items-center justify-center', className)}>
       <div
         className={cn(
-          'animate-spin rounded-full border-gray-300 border-t-primary-600',
+          'motion-safe:animate-spin rounded-full border-gray-300 dark:border-gray-600 border-t-primary-600 dark:border-t-primary-400',
           sizeStyles[size]
         )}
+        role="status"
+        aria-label="Loading"
       />
     </div>
   );

@@ -39,6 +39,7 @@ export default function EditRewardButton({ reward }: EditRewardButtonProps) {
         onClick={() => setIsOpen(true)}
         variant="outline"
         size="sm"
+        aria-label={`Edit reward: ${reward.name}`}
       >
         Edit
       </Button>

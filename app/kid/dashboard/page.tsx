@@ -74,15 +74,15 @@ export default async function KidDashboard() {
       {/* Header with Avatar and Points */}
       <div className="text-center mb-8">
         <div className="inline-block mb-4">
-          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-3xl font-bold">
+          <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-secondary-500 flex items-center justify-center text-white text-3xl font-bold">
             {profile?.name.charAt(0).toUpperCase()}
           </div>
         </div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Hi, {profile?.name}!
         </h1>
-        <div className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 rounded-full shadow-lg">
-          <span className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+        <div className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 rounded-full shadow-lg animate-fade-in-up">
+          <span className="text-4xl font-bold text-primary-600 dark:text-primary-400 animate-points-pop">
             {points}
           </span>
           <span className="ml-2 text-gray-600 dark:text-gray-400">points</span>
@@ -91,16 +91,18 @@ export default async function KidDashboard() {
 
       {/* Success Message for Recently Completed Chores */}
       {recentlyCompleted.length > 0 && (
-        <Card className="mb-6 border-green-200 bg-green-50 dark:bg-green-900/20">
+        <Card className="mb-6 border-success-200 dark:border-success-800 bg-success-50 dark:bg-success-900/20 animate-fade-in-up">
           <CardContent className="py-4">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🎉</span>
+            <div className="flex items-center gap-3">
+              <span className="text-3xl animate-gentle-bounce" aria-hidden="true">🎉</span>
               <div>
-                <p className="font-semibold text-green-900 dark:text-green-100">
-                  Great job!
+                <p className="font-semibold text-success-900 dark:text-success-100">
+                  {recentlyCompleted.length === 1 ? 'Way to go!' : 'You\'re on fire!'}
                 </p>
-                <p className="text-sm text-green-700 dark:text-green-300">
-                  You&rsquo;ve completed {recentlyCompleted.length} chore{recentlyCompleted.length > 1 ? 's' : ''} recently!
+                <p className="text-sm text-success-700 dark:text-success-300">
+                  {recentlyCompleted.length === 1
+                    ? 'You completed a chore today — keep it up!'
+                    : `${recentlyCompleted.length} chores done recently. That's amazing!`}
                 </p>
               </div>
             </div>
@@ -115,7 +117,7 @@ export default async function KidDashboard() {
             <span>⚠️</span>
             Overdue ({overdueChores.length})
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4 stagger-children">
             {overdueChores.map(chore => (
               <ChoreCard key={chore.id} chore={chore} />
             ))}
@@ -130,14 +132,18 @@ export default async function KidDashboard() {
         </h2>
         {todaysChores.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400">
-                No chores due today. Enjoy your free time! 🎮
+            <CardContent className="py-10 text-center">
+              <div className="text-4xl mb-3 animate-gentle-bounce" aria-hidden="true">🎮</div>
+              <p className="text-lg font-medium text-gray-700 dark:text-gray-300">
+                No chores due today!
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Enjoy your free time — you&apos;ve earned it.
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-4 stagger-children">
             {todaysChores.map(chore => (
               <ChoreCard key={chore.id} chore={chore} />
             ))}
@@ -182,11 +188,12 @@ export default async function KidDashboard() {
       {chores.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-xl text-gray-500 dark:text-gray-400 mb-2">
-              🎉 No chores assigned yet!
+            <div className="text-5xl mb-4 animate-gentle-bounce" aria-hidden="true">🌟</div>
+            <p className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">
+              All clear — no chores yet!
             </p>
-            <p className="text-sm text-gray-400">
-              Check back later for new chores
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Your parents haven&apos;t assigned any chores. Check back soon!
             </p>
           </CardContent>
         </Card>

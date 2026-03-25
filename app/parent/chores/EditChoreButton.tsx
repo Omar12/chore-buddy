@@ -40,6 +40,7 @@ export default function EditChoreButton({ chore, kidProfiles }: EditChoreButtonP
         onClick={() => setIsOpen(true)}
         variant="outline"
         size="sm"
+        aria-label={`Edit chore: ${chore.title}`}
       >
         Edit
       </Button>

@@ -38,9 +38,9 @@ export default async function KidRewardsPage() {
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
           Rewards Store
         </h1>
-        <div className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 rounded-full shadow-lg">
+        <div className="inline-flex items-center px-6 py-3 bg-white dark:bg-gray-800 rounded-full shadow-lg animate-fade-in-up">
           <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">You have</span>
-          <span className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+          <span className="text-3xl font-bold text-primary-600 dark:text-primary-400 animate-points-pop">
             {points}
           </span>
           <span className="ml-2 text-gray-600 dark:text-gray-400">points</span>
@@ -55,17 +55,18 @@ export default async function KidRewardsPage() {
 
         {rewards.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center">
-              <p className="text-xl text-gray-500 dark:text-gray-400 mb-2">
-                No rewards available yet
+            <CardContent className="py-12 text-center animate-fade-in-up">
+              <div className="text-5xl mb-4 animate-gentle-bounce" aria-hidden="true">🎁</div>
+              <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                No rewards yet
               </p>
-              <p className="text-sm text-gray-400">
-                Ask your parents to add some rewards!
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Ask your parents to add some rewards to the store!
               </p>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 stagger-children">
             {rewards.map(reward => (
               <RewardCard
                 key={reward.id}

@@ -82,13 +82,14 @@ export default function ChoresTable({ chores, profiles, kidProfiles }: ChoresTab
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Kid Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="filter-kid" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Filter by Kid
               </label>
               <select
+                id="filter-kid"
                 value={selectedKid}
                 onChange={(e) => setSelectedKid(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="all">All Kids</option>
                 {kidProfiles.map(kid => (
@@ -101,13 +102,14 @@ export default function ChoresTable({ chores, profiles, kidProfiles }: ChoresTab
 
             {/* Status Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="filter-status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Filter by Status
               </label>
               <select
+                id="filter-status"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value as ChoreStatus)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="all">All Statuses</option>
                 <option value="not_started">Not Started</option>
@@ -119,15 +121,16 @@ export default function ChoresTable({ chores, profiles, kidProfiles }: ChoresTab
 
             {/* Search */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="filter-search" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Search
               </label>
               <input
+                id="filter-search"
                 type="text"
                 placeholder="Search chores..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
           </div>
@@ -188,7 +191,7 @@ export default function ChoresTable({ chores, profiles, kidProfiles }: ChoresTab
                       )}
 
                       <div className="flex flex-wrap gap-3 text-sm text-gray-500 dark:text-gray-400">
-                        <span className="font-medium text-blue-600 dark:text-blue-400">
+                        <span className="font-medium text-primary-600 dark:text-primary-400">
                           {chore.pointsValue} points
                         </span>
                         {chore.dueDate && (
