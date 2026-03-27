@@ -138,6 +138,7 @@ export default function RewardFormModal({
               <input
                 id="reward-name"
                 type="text"
+                data-1p-ignore
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -171,6 +172,7 @@ export default function RewardFormModal({
               <input
                 id="reward-points-cost"
                 type="number"
+                data-1p-ignore
                 value={formData.pointsCost}
                 onChange={(e) => setFormData({ ...formData, pointsCost: parseInt(e.target.value) || 0 })}
                 required

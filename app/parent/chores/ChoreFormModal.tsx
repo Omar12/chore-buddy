@@ -168,6 +168,7 @@ export default function ChoreFormModal({
               <input
                 id="chore-title"
                 type="text"
+                data-1p-ignore
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 required
@@ -201,6 +202,7 @@ export default function ChoreFormModal({
               <input
                 id="chore-points"
                 type="number"
+                data-1p-ignore
                 value={formData.pointsValue}
                 onChange={(e) => setFormData({ ...formData, pointsValue: parseInt(e.target.value) || 0 })}
                 required
@@ -219,6 +221,7 @@ export default function ChoreFormModal({
               <input
                 id="chore-due-date"
                 type="date"
+                data-1p-ignore
                 value={formData.dueDate}
                 onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"

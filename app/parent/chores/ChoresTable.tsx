@@ -127,6 +127,7 @@ export default function ChoresTable({ chores, profiles, kidProfiles }: ChoresTab
               <input
                 id="filter-search"
                 type="text"
+                data-1p-ignore
                 placeholder="Search chores..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}

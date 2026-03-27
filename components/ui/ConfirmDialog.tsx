@@ -133,6 +133,7 @@ export default function ConfirmDialog({
               )}
               <input
                 type="text"
+                data-1p-ignore
                 value={input.value}
                 onChange={(e) => input.onChange(e.target.value)}
                 placeholder={input.placeholder}

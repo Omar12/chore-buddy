@@ -143,6 +143,7 @@ export default function ProfileFormModal({
               <input
                 id="profile-name"
                 type="text"
+                data-1p-ignore
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -181,6 +182,7 @@ export default function ProfileFormModal({
               <input
                 id="profile-avatar"
                 type="url"
+                data-1p-ignore
                 value={formData.avatarUrl}
                 onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
                 placeholder="https://example.com/avatar.jpg"

@@ -52,9 +52,20 @@ export async function getProfile(profileId: string): Promise<Profile | null> {
 }
 
 export async function createProfile(input: CreateProfileInput): Promise<Profile> {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error('Not authenticated');
+  }
+
+  // Resolve familyId server-side from the authenticated user
+  const familyId = input.familyId || (await getCurrentFamilyId());
+  if (!familyId) {
+    throw new Error('No family found for current user');
+  }
+
   const data = await prisma.profile.create({
     data: {
-      familyId: input.familyId,
+      familyId,
       name: input.name,
       role: input.role,
       avatarUrl: input.avatarUrl || null,

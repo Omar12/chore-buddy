@@ -9,7 +9,9 @@
       "Bash(else echo \"Docker is not running or container not found\")",
       "Bash(fi)",
       "Bash(npx tsc:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

@@ -32,6 +32,12 @@ export default function Home() {
           >
             Sign In
           </Link>
+          <Link
+            href="/how-to-use"
+            className="px-8 py-3 text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 font-semibold transition-colors w-full sm:w-auto"
+          >
+            How It Works
+          </Link>
         </div>
 
         <div className="pt-8 grid grid-cols-1 md:grid-cols-3 gap-6">

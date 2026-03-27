@@ -114,6 +114,7 @@ export default function PointsAdjustmentSection({ kidsWithPoints }: PointsAdjust
             <input
               id="points-amount"
               type="number"
+              data-1p-ignore
               value={amount}
               onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
               required
