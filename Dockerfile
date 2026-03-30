@@ -5,6 +5,7 @@
 FROM node:20.18.1-alpine3.20 AS deps
 
 # Install security updates and required packages
+# hadolint ignore=DL3018
 RUN apk upgrade --no-cache && \
     apk add --no-cache libc6-compat
 
