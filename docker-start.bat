@@ -15,17 +15,25 @@ if errorlevel 1 (
     exit /b 1
 )
 
-REM Check if Docker Compose is installed
-docker-compose --version >nul 2>&1
-if errorlevel 1 (
-    echo ❌ Docker Compose is not installed. Please install Docker Desktop which includes Docker Compose:
-    echo    https://docs.docker.com/desktop/install/windows-install/
-    pause
-    exit /b 1
+REM Check if Docker Compose is available (plugin or standalone)
+set COMPOSE_CMD=
+docker compose version >nul 2>&1
+if not errorlevel 1 (
+    set COMPOSE_CMD=docker compose
+) else (
+    docker-compose --version >nul 2>&1
+    if not errorlevel 1 (
+        set COMPOSE_CMD=docker-compose
+    ) else (
+        echo ❌ Docker Compose is not available. Please install Docker Desktop which includes Docker Compose:
+        echo    https://docs.docker.com/desktop/install/windows-install/
+        pause
+        exit /b 1
+    )
 )
 
 echo ✅ Docker is installed
-echo ✅ Docker Compose is installed
+echo ✅ Docker Compose is available
 echo.
 
 REM Check if .env file exists
@@ -38,9 +46,9 @@ if not exist .env (
         copy .env.docker.example .env >nul
         echo ✅ Created .env file
         echo.
-        echo ⚠️  IMPORTANT: Please edit .env and add your Supabase credentials:
-        echo    - NEXT_PUBLIC_SUPABASE_URL
-        echo    - NEXT_PUBLIC_SUPABASE_ANON_KEY
+        echo ⚠️  IMPORTANT: Please edit .env and configure:
+        echo    - DATABASE_URL  (pre-filled for Docker volume)
+        echo    - AUTH_SECRET   (generate a random secret)
         echo.
         pause
     ) else (
@@ -55,7 +63,7 @@ echo 🐳 Building and starting Docker containers...
 echo This may take a few minutes on first run...
 echo.
 
-docker-compose up -d --build
+%COMPOSE_CMD% up -d --build
 
 REM Wait for container to be healthy
 echo.
@@ -63,7 +71,7 @@ echo ⏳ Waiting for application to start...
 timeout /t 5 /nobreak >nul
 
 REM Check if container is running
-docker-compose ps | findstr "Up" >nul
+%COMPOSE_CMD% ps | findstr /R "Up running" >nul
 if not errorlevel 1 (
     echo.
     echo ✅ Chore Buddy is running!
@@ -72,16 +80,14 @@ if not errorlevel 1 (
     echo    http://localhost:3000
     echo.
     echo 📊 Useful commands:
-    echo    View logs:       docker-compose logs -f app
-    echo    Stop:            docker-compose down
-    echo    Restart:         docker-compose restart
-    echo    Rebuild:         docker-compose up -d --build
-    echo.
-    echo 📚 For more information, see docs\DOCKER.md
+    echo    View logs:       %COMPOSE_CMD% logs -f app
+    echo    Stop:            %COMPOSE_CMD% down
+    echo    Restart:         %COMPOSE_CMD% restart
+    echo    Rebuild:         %COMPOSE_CMD% up -d --build
 ) else (
     echo.
     echo ❌ Container failed to start. Check logs with:
-    echo    docker-compose logs app
+    echo    %COMPOSE_CMD% logs app
 )
 
 echo.

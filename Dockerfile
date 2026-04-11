@@ -38,14 +38,13 @@ COPY . .
 
 # Copy environment variables for build time
 # Note: Only NEXT_PUBLIC_ vars are embedded in the build
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
 ARG NEXT_PUBLIC_APP_URL
 
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Generate Prisma Client
+RUN npx prisma generate
 
 # Build the application
 RUN npm run build
@@ -72,12 +71,20 @@ COPY --from=builder /app/package.json ./package.json
 # Note: This will be empty or minimal in most cases
 COPY --from=builder /app/public ./public
 
+# Copy Prisma schema and generated client
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
 # Copy Next.js standalone output
 # The standalone build includes all necessary dependencies
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
 # Copy static files (JS, CSS, images built by Next.js)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Create directory for SQLite database
+RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
 
 # Set proper permissions
 RUN chmod -R 755 /app && \
