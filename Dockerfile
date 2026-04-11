@@ -2,7 +2,7 @@
 # Multi-stage build for optimized production image
 
 # Stage 1: Dependencies
-FROM node:20.18.1-alpine3.20 AS deps
+FROM node:20-alpine3.21 AS deps
 
 # Install security updates and required packages
 # hadolint ignore=DL3018
@@ -19,7 +19,7 @@ RUN npm ci --only=production && \
     npm cache clean --force
 
 # Stage 2: Builder
-FROM node:20.18.1-alpine3.20 AS builder
+FROM node:20-alpine3.21 AS builder
 
 # Install security updates
 RUN apk upgrade --no-cache
@@ -43,14 +43,12 @@ ARG NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Generate Prisma Client
-RUN npx prisma generate
-
-# Build the application
-RUN npm run build
+# Generate Prisma Client and build the application
+RUN npx prisma generate && \
+    npm run build
 
 # Stage 3: Runner
-FROM node:20.18.1-alpine3.20 AS runner
+FROM node:20-alpine3.21 AS runner
 
 # Install security updates
 RUN apk upgrade --no-cache
@@ -83,11 +81,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 # Copy static files (JS, CSS, images built by Next.js)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Create directory for SQLite database
-RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
-
-# Set proper permissions
-RUN chmod -R 755 /app && \
+# Create directory for SQLite database and set proper permissions
+RUN mkdir -p /app/data && \
+    chmod -R 755 /app && \
     chown -R nextjs:nodejs /app
 
 # Switch to non-root user

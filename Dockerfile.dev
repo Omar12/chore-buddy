@@ -1,7 +1,7 @@
 # Development Dockerfile for Chore Buddy
 # This file is optimized for development with hot-reload
 
-FROM node:20.18.1-alpine3.20
+FROM node:20-alpine3.21
 
 # Install security updates and dependencies
 RUN apk upgrade --no-cache && \
