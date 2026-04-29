@@ -69,11 +69,12 @@ COPY --from=builder /app/package.json ./package.json
 # Note: This will be empty or minimal in most cases
 COPY --from=builder /app/public ./public
 
-# Copy Prisma schema, generated client, and CLI (needed for migrate deploy at startup)
+# Copy all production node_modules (includes full prisma CLI dep tree for migrate deploy)
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+
+# Copy Prisma schema and generated client binary (created during build, not in deps)
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
 # Copy Next.js standalone output
 # The standalone build includes all necessary dependencies
