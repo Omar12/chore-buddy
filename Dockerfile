@@ -69,10 +69,11 @@ COPY --from=builder /app/package.json ./package.json
 # Note: This will be empty or minimal in most cases
 COPY --from=builder /app/public ./public
 
-# Copy Prisma schema and generated client
+# Copy Prisma schema, generated client, and CLI (needed for migrate deploy at startup)
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
 
 # Copy Next.js standalone output
 # The standalone build includes all necessary dependencies
@@ -80,6 +81,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 
 # Copy static files (JS, CSS, images built by Next.js)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Copy startup script
+COPY --chown=nextjs:nodejs start.sh ./start.sh
+RUN chmod +x start.sh
 
 # Create directory for SQLite database and set proper permissions
 RUN mkdir -p /app/data && \
@@ -99,5 +104,5 @@ ENV HOSTNAME="0.0.0.0"
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the application
-CMD ["node", "server.js"]
+# Start the application (runs prisma migrate deploy then node server.js)
+CMD ["./start.sh"]
